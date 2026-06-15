@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>聖榮國小 行政連結網</title>
+<title>新莊國小 行政連結網</title>
 <style>
   :root {
     --bg: #f0f4f8;
@@ -15,16 +15,14 @@
     --text-muted: #6b7280;
     --border: #e2e8f0;
     --danger: #dc2626;
-    --success: #16a34a;
     --shadow: 0 2px 8px rgba(0,0,0,0.08);
     --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
     --radius: 12px;
-    --edit-bar: #1a2540;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  /* ── 頂部導覽 ── */
+  /* ── Header ── */
   header {
     background: var(--primary);
     color: #fff;
@@ -33,9 +31,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    position: sticky; top: 0; z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
   header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.05em; }
@@ -45,52 +41,34 @@
     border: 1px solid rgba(255,255,255,0.3);
     border-radius: 20px;
     padding: 6px 14px 6px 36px;
-    color: #fff;
-    font-size: 14px;
-    width: 200px;
-    outline: none;
+    color: #fff; font-size: 14px; width: 200px; outline: none;
     transition: background 0.2s, width 0.3s;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='white' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: 10px center;
+    background-repeat: no-repeat; background-position: 10px center;
   }
   #search-box::placeholder { color: rgba(255,255,255,0.6); }
   #search-box:focus { background-color: rgba(255,255,255,0.25); width: 260px; }
   #edit-btn {
     background: rgba(255,255,255,0.15);
     border: 1px solid rgba(255,255,255,0.4);
-    color: #fff;
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.2s;
+    color: #fff; border-radius: 8px; padding: 6px 14px;
+    font-size: 13px; cursor: pointer; transition: background 0.2s;
   }
   #edit-btn:hover { background: rgba(255,255,255,0.25); }
 
-  /* ── 編輯模式提示列 ── */
+  /* ── 編輯列 ── */
   #edit-bar {
-    display: none;
-    background: var(--edit-bar);
-    color: #fff;
-    padding: 8px 24px;
-    font-size: 13px;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 56px;
-    z-index: 99;
+    display: none; background: #1a2540; color: #fff;
+    padding: 8px 24px; font-size: 13px;
+    align-items: center; gap: 12px;
+    position: sticky; top: 56px; z-index: 99;
   }
   #edit-bar.active { display: flex; }
   #edit-bar span { flex: 1; }
   .bar-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.4);
-    color: #fff;
-    border-radius: 6px;
-    padding: 4px 12px;
-    font-size: 12px;
-    cursor: pointer;
+    background: transparent; border: 1px solid rgba(255,255,255,0.4);
+    color: #fff; border-radius: 6px; padding: 4px 12px;
+    font-size: 12px; cursor: pointer;
   }
   .bar-btn.danger { border-color: #f87171; color: #f87171; }
   .bar-btn:hover { background: rgba(255,255,255,0.1); }
@@ -98,269 +76,115 @@
   /* ── 主內容 ── */
   main { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
 
-  /* ── 區塊標題 ── */
-  .section-label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin: 32px 0 14px;
-    padding-left: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  /* ── 搜尋結果 ── */
+  #search-results { display: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; margin-bottom: 24px; }
+  #search-results.active { display: block; }
+  .search-result-header { padding: 12px 16px; font-size: 13px; color: var(--text-muted); background: #f8fafc; border-bottom: 1px solid var(--border); }
+  .search-result-item { display: flex; align-items: flex-start; padding: 11px 16px; gap: 12px; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.15s; }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: var(--primary-light); }
+  .result-dept { font-size: 11px; color: var(--text-muted); background: var(--border); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; margin-top: 2px; white-space: nowrap; }
+  .result-title { font-size: 14px; font-weight: 500; color: var(--primary); }
+  .result-note { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+  /* ── Section（處室大標題） ── */
+  .section-block { margin-bottom: 32px; }
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; padding-left: 2px;
   }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-drag { display: none; cursor: grab; color: var(--text-muted); font-size: 20px; padding: 0 2px; }
+  .editing .section-drag { display: block; }
+  .section-title-text {
+    font-size: 15px; font-weight: 700; color: var(--primary);
+    letter-spacing: 0.04em;
+  }
+  .section-line { flex: 1; height: 2px; background: var(--primary); opacity: 0.15; border-radius: 2px; }
+  .section-edit-actions { display: none; gap: 6px; }
+  .editing .section-edit-actions { display: flex; }
+  .section-edit-actions button {
+    background: none; border: 1px solid var(--border); border-radius: 5px;
+    padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--text-muted);
+  }
+  .section-edit-actions button:hover { border-color: var(--primary); color: var(--primary); }
+  .section-edit-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
+  .add-card-btn {
+    display: none; border: 2px dashed var(--border); border-radius: var(--radius);
+    background: none; padding: 20px; width: 100%; cursor: pointer;
+    color: var(--text-muted); font-size: 14px; transition: all 0.15s;
+    grid-column: 1 / -1;
+  }
+  .add-card-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .editing .add-card-btn { display: block; }
 
   /* ── 卡片格線 ── */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 16px;
-  }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 
-  /* ── 單張卡片 ── */
-  .dept-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-  }
+  /* ── 卡片 ── */
+  .dept-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; transition: box-shadow 0.2s; }
   .dept-card:hover { box-shadow: var(--shadow-lg); }
-
-  .card-header {
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    user-select: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.2s;
-    gap: 8px;
-  }
+  .card-header { padding: 13px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; gap: 8px; }
   .card-header.open { border-bottom-color: var(--border); }
-
-  .card-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .card-header-left { display: flex; align-items: center; gap: 9px; flex: 1; min-width: 0; }
   .dept-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
-  .dept-info { min-width: 0; }
-  .dept-title { font-size: 15px; font-weight: 600; color: var(--text); }
-  .dept-count { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-
-  .chevron {
-    width: 18px; height: 18px; flex-shrink: 0;
-    fill: none; stroke: var(--text-muted); stroke-width: 2;
-    transition: transform 0.2s;
-  }
-  .chevron.open { transform: rotate(180deg); }
-
-  /* 編輯模式下的拖曳把手（卡片層） */
-  .drag-handle-card {
-    display: none;
-    cursor: grab;
-    color: var(--text-muted);
-    font-size: 18px;
-    padding: 0 4px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
+  .dept-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .dept-count { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .drag-handle-card { display: none; cursor: grab; color: var(--text-muted); font-size: 17px; padding: 0 2px; flex-shrink: 0; }
   .editing .drag-handle-card { display: block; }
+  .card-edit-actions { display: none; gap: 5px; }
+  .editing .card-edit-actions { display: flex; }
+  .card-edit-actions button { background: none; border: 1px solid var(--border); border-radius: 5px; padding: 3px 7px; font-size: 11px; cursor: pointer; color: var(--text-muted); }
+  .card-edit-actions button:hover { border-color: var(--primary); color: var(--primary); }
+  .card-edit-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
+  .chevron { width: 17px; height: 17px; flex-shrink: 0; fill: none; stroke: var(--text-muted); stroke-width: 2; transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
 
   /* ── 連結清單 ── */
   .card-body { padding: 0; display: none; }
   .card-body.open { display: block; }
-
   .link-list { list-style: none; }
-  .link-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    gap: 10px;
-    transition: background 0.15s;
-  }
+  .link-item { display: flex; align-items: flex-start; padding: 9px 14px; border-bottom: 1px solid var(--border); gap: 9px; transition: background 0.15s; }
   .link-item:last-child { border-bottom: none; }
   .link-item:hover { background: #f8fafc; }
-
-  .link-num {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--primary);
-    background: var(--primary-light);
-    border-radius: 4px;
-    padding: 2px 6px;
-    min-width: 28px;
-    text-align: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
+  .drag-handle-link { display: none; cursor: grab; color: #ccc; font-size: 15px; padding: 0 1px; flex-shrink: 0; margin-top: 2px; }
+  .editing .drag-handle-link { display: block; }
+  .link-num { font-size: 11px; font-weight: 700; color: var(--primary); background: var(--primary-light); border-radius: 4px; padding: 2px 6px; min-width: 26px; text-align: center; flex-shrink: 0; margin-top: 2px; }
   .link-content { flex: 1; min-width: 0; }
-  .link-title {
-    font-size: 14px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  .link-title { font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .link-title:hover { text-decoration: underline; }
-  .link-note { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
-
-  /* 連結操作按鈕（編輯模式） */
+  .link-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
   .link-actions { display: none; gap: 4px; flex-shrink: 0; }
   .editing .link-actions { display: flex; }
-  .link-actions button {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 3px 7px;
-    font-size: 11px;
-    cursor: pointer;
-    color: var(--text-muted);
-    transition: all 0.15s;
-  }
+  .link-actions button { background: none; border: 1px solid var(--border); border-radius: 5px; padding: 3px 6px; font-size: 11px; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
   .link-actions button:hover { border-color: var(--primary); color: var(--primary); }
   .link-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
-
-  /* 連結拖曳把手 */
-  .drag-handle-link {
-    display: none;
-    cursor: grab;
-    color: #ccc;
-    font-size: 16px;
-    padding: 0 2px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .editing .drag-handle-link { display: block; }
-
-  /* 新增連結按鈕 */
-  .add-link-btn {
-    display: none;
-    width: 100%;
-    padding: 9px 16px;
-    background: none;
-    border: none;
-    border-top: 1px solid var(--border);
-    color: var(--primary);
-    font-size: 13px;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s;
-  }
+  .add-link-btn { display: none; width: 100%; padding: 8px 14px; background: none; border: none; border-top: 1px solid var(--border); color: var(--primary); font-size: 13px; cursor: pointer; text-align: left; transition: background 0.15s; }
   .add-link-btn:hover { background: var(--primary-light); }
   .editing .add-link-btn { display: block; }
+  .empty-note { color: var(--text-muted); font-size: 12px; padding: 12px 14px; }
 
-  /* ── 搜尋結果 ── */
-  #search-results {
-    display: none;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-    margin-bottom: 24px;
-  }
-  #search-results.active { display: block; }
-  .search-result-header { padding: 12px 16px; font-size: 13px; color: var(--text-muted); background: #f8fafc; border-bottom: 1px solid var(--border); }
-  .search-result-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 11px 16px;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-    text-decoration: none;
-    color: inherit;
-    transition: background 0.15s;
-  }
-  .search-result-item:last-child { border-bottom: none; }
-  .search-result-item:hover { background: var(--primary-light); }
-  .result-dept { font-size: 11px; color: var(--text-muted); background: var(--border); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; margin-top: 2px; }
-  .result-title { font-size: 14px; font-weight: 500; color: var(--primary); }
-  .result-note { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  /* ── Modal ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
+  /* ── Modals ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
   .modal-overlay.active { display: flex; }
-  .modal {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 24px;
-    width: 420px;
-    max-width: 90vw;
-    box-shadow: var(--shadow-lg);
-  }
+  .modal { background: var(--card-bg); border-radius: var(--radius); padding: 24px; width: 420px; max-width: 90vw; box-shadow: var(--shadow-lg); }
   .modal h3 { font-size: 16px; margin-bottom: 16px; }
   .modal label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 4px; margin-top: 12px; }
-  .modal input, .modal textarea {
-    width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 14px;
-    outline: none;
-    font-family: inherit;
-    transition: border-color 0.2s;
-  }
+  .modal input, .modal textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s; }
   .modal input:focus, .modal textarea:focus { border-color: var(--primary); }
   .modal textarea { resize: vertical; min-height: 70px; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
   .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: 14px; cursor: pointer; }
   .btn-save { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 14px; cursor: pointer; }
   .btn-save:hover { background: #134580; }
-
-  /* ── 密碼 Modal ── */
   #pw-error { color: var(--danger); font-size: 13px; margin-top: 6px; display: none; }
-
-  /* 卡片編輯（標題編輯） */
-  .card-edit-actions { display: none; gap: 6px; }
-  .editing .card-edit-actions { display: flex; }
-  .card-edit-actions button {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 3px 8px;
-    font-size: 11px;
-    cursor: pointer;
-    color: var(--text-muted);
-  }
-  .card-edit-actions button:hover { border-color: var(--primary); color: var(--primary); }
-  .card-edit-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
-
-  /* SortableJS ghost */
   .sortable-ghost { opacity: 0.4; }
-  .sortable-drag { opacity: 0.9; box-shadow: var(--shadow-lg); }
-
-  /* ── 搜尋高亮 ── */
-  mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
-
-  /* ── 空狀態 ── */
-  .empty-note { color: var(--text-muted); font-size: 13px; padding: 14px 16px; }
-
-  @media (max-width: 600px) {
-    header h1 { font-size: 15px; }
-    #search-box { width: 140px; }
-    #search-box:focus { width: 180px; }
-  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🏫 行政連結網</h1>
+  <h1>🏫 新莊國小 行政連結網</h1>
   <div class="header-right">
     <input type="search" id="search-box" placeholder="搜尋連結…" autocomplete="off">
     <button id="edit-btn" onclick="openPasswordModal()">✏️ 編輯</button>
@@ -368,25 +192,17 @@
 </header>
 
 <div id="edit-bar">
-  <span>✏️ 編輯模式 — 可拖曳排序、新增、編輯連結</span>
-  <button class="bar-btn" onclick="addDeptCard()">＋ 新增處室</button>
+  <span>✏️ 編輯模式 — 可拖曳排序、新增、編輯</span>
+  <button class="bar-btn" onclick="addSection()">＋ 新增處室區塊</button>
   <button class="bar-btn danger" onclick="exitEdit()">結束編輯</button>
 </div>
 
 <main>
-  <!-- 搜尋結果 -->
   <div id="search-results">
     <div class="search-result-header" id="search-count"></div>
     <div id="search-list"></div>
   </div>
-
-  <!-- 行政區塊 -->
-  <div class="section-label" id="section-admin-label">行政處室</div>
-  <div class="cards-grid" id="grid-admin"></div>
-
-  <!-- 行政工具區 -->
-  <div class="section-label" id="section-tools-label">行政工具區</div>
-  <div class="cards-grid" id="grid-tools"></div>
+  <div id="sections-container"></div>
 </main>
 
 <!-- 密碼 Modal -->
@@ -403,7 +219,7 @@
   </div>
 </div>
 
-<!-- 新增/編輯連結 Modal -->
+<!-- 連結 Modal -->
 <div class="modal-overlay" id="link-modal">
   <div class="modal">
     <h3 id="link-modal-title">新增連結</h3>
@@ -420,34 +236,40 @@
   </div>
 </div>
 
-<!-- 新增/編輯處室 Modal -->
-<div class="modal-overlay" id="dept-modal">
+<!-- 卡片 Modal -->
+<div class="modal-overlay" id="card-modal">
   <div class="modal">
-    <h3 id="dept-modal-title">新增處室卡片</h3>
+    <h3 id="card-modal-title">新增卡片</h3>
     <label>名稱 *</label>
-    <input type="text" id="dm-name" placeholder="例：教務處">
+    <input type="text" id="cm-name" placeholder="例：教學組">
     <label>圖示（Emoji）</label>
-    <input type="text" id="dm-icon" placeholder="例：📚" maxlength="4">
-    <label>區域</label>
-    <select id="dm-section" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;font-family:inherit;">
-      <option value="admin">行政處室</option>
-      <option value="tools">行政工具區</option>
-    </select>
+    <input type="text" id="cm-icon" placeholder="例：📖" maxlength="4">
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('dept-modal')">取消</button>
-      <button class="btn-save" onclick="saveDeptModal()">儲存</button>
+      <button class="btn-cancel" onclick="closeModal('card-modal')">取消</button>
+      <button class="btn-save" onclick="saveCardModal()">儲存</button>
     </div>
   </div>
 </div>
 
-<!-- Firebase SDK -->
+<!-- 區塊 Modal -->
+<div class="modal-overlay" id="section-modal">
+  <div class="modal">
+    <h3 id="section-modal-title">新增處室區塊</h3>
+    <label>處室名稱 *</label>
+    <input type="text" id="sm-name" placeholder="例：教務處">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('section-modal')">取消</button>
+      <button class="btn-save" onclick="saveSectionModal()">儲存</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import {
-  getFirestore, collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, writeBatch, query, orderBy
-} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy, updateDoc }
+  from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: "AIzaSyCwf-zntZMo1adjRhG_P8KKFsJ5liHBPX4",
   authDomain: "sjps-workbookmarks.firebaseapp.com",
   projectId: "sjps-workbookmarks",
@@ -455,154 +277,184 @@ const firebaseConfig = {
   messagingSenderId: "186008632303",
   appId: "1:186008632303:web:c74330f567d2dcbe4b541a",
   measurementId: "G-1C0F8194M5"
-};
-
-const app = initializeApp(firebaseConfig);
+});
 const db = getFirestore(app);
 
-// ── 全域狀態 ──
+// 掛到全域
 window._db = db;
-window._editMode = false;
-window._depts = {}; // id -> {name, icon, section, order, links:[]}
-window._linkModal = { deptId: null, linkId: null };
-window._deptModal = { deptId: null };
+window._fs = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy, updateDoc };
 
-// ── 載入資料 ──
-async function loadAll() {
-  const deptsSnap = await getDocs(query(collection(db, 'departments'), orderBy('order')));
-  window._depts = {};
-  for (const d of deptsSnap.docs) {
-    const data = d.data();
-    const linksSnap = await getDocs(query(collection(db, 'departments', d.id, 'links'), orderBy('order')));
-    data.links = linksSnap.docs.map(l => ({ id: l.id, ...l.data() }));
-    window._depts[d.id] = { id: d.id, ...data };
-  }
-  renderAll();
-}
+// 預設資料結構：sections > cards > links
+// sections: { id, name, order }
+// cards: 子集合 { id, name, icon, order, sectionId }
+// links: cards的子集合 { id, title, url, note, order }
 
-// ── 初始化預設資料（第一次使用） ──
-async function initDefaultData() {
-  const snap = await getDocs(collection(db, 'departments'));
+async function initDefaults() {
+  const snap = await getDocs(collection(db, 'sections'));
   if (!snap.empty) return;
   const defaults = [
-    { name: '校長室', icon: '👨‍💼', section: 'admin', order: 1 },
-    { name: '教務處', icon: '📚', section: 'admin', order: 2 },
-    { name: '學務處', icon: '🎒', section: 'admin', order: 3 },
-    { name: '總務處', icon: '🏗️', section: 'admin', order: 4 },
-    { name: '輔導室', icon: '💙', section: 'admin', order: 5 },
-    { name: '會計室', icon: '📊', section: 'admin', order: 6 },
-    { name: '人事室', icon: '👥', section: 'admin', order: 7 },
-    { name: '行政工具', icon: '🛠️', section: 'tools', order: 1 },
+    { name: '校長室', order: 1, cards: [{ name: '校長室', icon: '👨‍💼', order: 1 }] },
+    { name: '教務處', order: 2, cards: [
+      { name: '教學組', icon: '📖', order: 1 },
+      { name: '研發組', icon: '🔬', order: 2 },
+      { name: '註冊組', icon: '📋', order: 3 },
+      { name: '資訊組', icon: '💻', order: 4 },
+    ]},
+    { name: '學務處', order: 3, cards: [
+      { name: '生教組', icon: '🌱', order: 1 },
+      { name: '訓育組', icon: '📣', order: 2 },
+      { name: '衛生組', icon: '🏥', order: 3 },
+      { name: '體育組', icon: '⚽', order: 4 },
+    ]},
+    { name: '總務處', order: 4, cards: [
+      { name: '事務組', icon: '🔧', order: 1 },
+      { name: '文資組', icon: '📁', order: 2 },
+      { name: '出納組', icon: '💰', order: 3 },
+    ]},
+    { name: '輔導室', order: 5, cards: [
+      { name: '輔導組', icon: '💙', order: 1 },
+      { name: '親職組', icon: '👨‍👩‍👧', order: 2 },
+      { name: '特教組', icon: '⭐', order: 3 },
+    ]},
+    { name: '會計室', order: 6, cards: [{ name: '會計室', icon: '📊', order: 1 }] },
+    { name: '人事室', order: 7, cards: [{ name: '人事室', icon: '👥', order: 1 }] },
+    { name: '行政工具區', order: 8, cards: [{ name: '行政工具', icon: '🛠️', order: 1 }] },
   ];
   const batch = writeBatch(db);
-  for (const d of defaults) {
-    const ref = doc(collection(db, 'departments'));
-    batch.set(ref, d);
+  for (const s of defaults) {
+    const sRef = doc(collection(db, 'sections'));
+    batch.set(sRef, { name: s.name, order: s.order });
+    for (const c of s.cards) {
+      const cRef = doc(collection(db, 'sections', sRef.id, 'cards'));
+      batch.set(cRef, { name: c.name, icon: c.icon, order: c.order });
+    }
   }
   await batch.commit();
 }
 
-// 掛到全域讓非模組 JS 可以呼叫
-window._db = db;
-window._loadAll = loadAll;
-window._writeBatch = writeBatch;
-window._doc = doc;
-window._collection = collection;
-window._setDoc = setDoc;
-window._deleteDoc = deleteDoc;
+async function loadAll() {
+  const fs = window._fs;
+  const sectionsSnap = await getDocs(fs.query(collection(db, 'sections'), fs.orderBy('order')));
+  const data = [];
+  for (const s of sectionsSnap.docs) {
+    const section = { id: s.id, ...s.data(), cards: [] };
+    const cardsSnap = await getDocs(fs.query(collection(db, 'sections', s.id, 'cards'), fs.orderBy('order')));
+    for (const c of cardsSnap.docs) {
+      const card = { id: c.id, ...c.data(), links: [] };
+      const linksSnap = await getDocs(fs.query(collection(db, 'sections', s.id, 'cards', c.id, 'links'), fs.orderBy('order')));
+      card.links = linksSnap.docs.map(l => ({ id: l.id, ...l.data() }));
+      section.cards.push(card);
+    }
+    data.push(section);
+  }
+  window._data = data;
+  renderAll();
+}
 
-await initDefaultData();
+window._loadAll = loadAll;
+await initDefaults();
 await loadAll();
 </script>
 
 <script>
-// ── Sortable.js ──
-(function loadSortable() {
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';
-  document.head.appendChild(s);
-})();
+(function(){ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js'; document.head.appendChild(s); })();
+
+const EDIT_PW = '073411373';
+window._editMode = false;
+window._linkCtx = {};   // { sectionId, cardId, linkId }
+window._cardCtx = {};   // { sectionId, cardId }
+window._sectionCtx = {};// { sectionId }
 
 // ── 渲染 ──
 function renderAll() {
-  const adminGrid = document.getElementById('grid-admin');
-  const toolsGrid = document.getElementById('grid-tools');
-  adminGrid.innerHTML = '';
-  toolsGrid.innerHTML = '';
-
-  const sorted = Object.values(window._depts).sort((a,b) => (a.order||0)-(b.order||0));
-  for (const dept of sorted) {
-    const card = buildCard(dept);
-    if (dept.section === 'tools') toolsGrid.appendChild(card);
-    else adminGrid.appendChild(card);
-  }
-
-  if (window._editMode) {
-    document.body.classList.add('editing');
-    initSortables();
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '';
+  const data = window._data || [];
+  for (const section of data) {
+    container.appendChild(buildSection(section));
   }
   applySearch();
+  if (window._editMode) initSortables();
 }
 window.renderAll = renderAll;
 
-function buildCard(dept) {
-  const card = document.createElement('div');
-  card.className = 'dept-card';
-  card.dataset.id = dept.id;
+function buildSection(section) {
+  const div = document.createElement('div');
+  div.className = 'section-block';
+  div.dataset.id = section.id;
 
-  const links = dept.links || [];
-  const count = links.length;
-
-  card.innerHTML = `
-    <div class="card-header" onclick="toggleCard(this)">
-      <span class="drag-handle-card" title="拖曳排序" onclick="event.stopPropagation()">⠿</span>
-      <div class="card-header-left">
-        <span class="dept-icon">${dept.icon || '📁'}</span>
-        <div class="dept-info">
-          <div class="dept-title">${dept.name}</div>
-          <div class="dept-count">${count} 個連結</div>
-        </div>
+  div.innerHTML = `
+    <div class="section-header">
+      <span class="section-drag" title="拖曳區塊排序">⠿</span>
+      <span class="section-title-text">📂 ${section.name}</span>
+      <div class="section-line"></div>
+      <div class="section-edit-actions">
+        <button onclick="editSection('${section.id}')">編輯名稱</button>
+        <button class="del" onclick="deleteSection('${section.id}')">刪除區塊</button>
       </div>
-      <div class="card-edit-actions" onclick="event.stopPropagation()">
-        <button onclick="editDeptCard('${dept.id}')">編輯</button>
-        <button class="del" onclick="deleteDeptCard('${dept.id}')">刪除</button>
-      </div>
-      <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
-    <div class="card-body">
-      <ul class="link-list" id="links-${dept.id}">
-        ${links.length === 0 ? `<li class="empty-note">尚無連結，點「新增連結」開始加入</li>` :
-          links.map((lk, i) => buildLinkItem(lk, i+1, dept.id)).join('')}
-      </ul>
-      <button class="add-link-btn" onclick="openLinkModal('${dept.id}')">＋ 新增連結</button>
+    <div class="cards-grid" id="cards-${section.id}">
+      ${section.cards.map(c => buildCard(section.id, c)).join('')}
+      <button class="add-card-btn" onclick="addCard('${section.id}')">＋ 新增組別卡片</button>
     </div>
   `;
-  return card;
+  return div;
 }
 
-function buildLinkItem(lk, num, deptId) {
+function buildCard(sectionId, card) {
+  const links = card.links || [];
+  return `
+    <div class="dept-card" data-id="${card.id}">
+      <div class="card-header" onclick="toggleCard(this)">
+        <span class="drag-handle-card" onclick="event.stopPropagation()" title="拖曳排序">⠿</span>
+        <div class="card-header-left">
+          <span class="dept-icon">${card.icon || '📁'}</span>
+          <div>
+            <div class="dept-title">${card.name}</div>
+            <div class="dept-count">${links.length} 個連結</div>
+          </div>
+        </div>
+        <div class="card-edit-actions" onclick="event.stopPropagation()">
+          <button onclick="editCard('${sectionId}','${card.id}')">編輯</button>
+          <button class="del" onclick="deleteCard('${sectionId}','${card.id}')">刪除</button>
+        </div>
+        <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="card-body">
+        <ul class="link-list" id="links-${card.id}">
+          ${links.length === 0
+            ? `<li class="empty-note">尚無連結，點「新增連結」加入</li>`
+            : links.map((lk, i) => buildLinkItem(sectionId, card.id, lk, i+1)).join('')}
+        </ul>
+        <button class="add-link-btn" onclick="openLinkModal('${sectionId}','${card.id}')">＋ 新增連結</button>
+      </div>
+    </div>`;
+}
+
+function buildLinkItem(sectionId, cardId, lk, num) {
   return `
     <li class="link-item" data-id="${lk.id}">
       <span class="drag-handle-link" title="拖曳排序">⠿</span>
       <span class="link-num">${num}</span>
       <div class="link-content">
-        <a class="link-title" href="${lk.url}" target="_blank" rel="noopener" onclick="if(window._editMode)event.preventDefault()">${lk.title}</a>
+        <a class="link-title" href="${lk.url}" target="_blank" rel="noopener"
+           onclick="if(window._editMode)event.preventDefault()">${lk.title}</a>
         ${lk.note ? `<div class="link-note">${lk.note}</div>` : ''}
       </div>
       <div class="link-actions">
-        <button onclick="openLinkModal('${deptId}','${lk.id}')">編輯</button>
-        <button class="del" onclick="deleteLinkItem('${deptId}','${lk.id}')">刪除</button>
+        <button onclick="openLinkModal('${sectionId}','${cardId}','${lk.id}')">編輯</button>
+        <button class="del" onclick="deleteLink('${sectionId}','${cardId}','${lk.id}')">刪除</button>
       </div>
     </li>`;
 }
 
 function toggleCard(header) {
   const body = header.nextElementSibling;
-  const chevron = header.querySelector('.chevron');
-  const isOpen = body.classList.toggle('open');
-  chevron.classList.toggle('open', isOpen);
-  header.classList.toggle('open', isOpen);
+  const open = body.classList.toggle('open');
+  header.querySelector('.chevron').classList.toggle('open', open);
+  header.classList.toggle('open', open);
 }
+window.toggleCard = toggleCard;
 
 // ── 搜尋 ──
 document.getElementById('search-box').addEventListener('input', applySearch);
@@ -611,48 +463,36 @@ function applySearch() {
   const resultsDiv = document.getElementById('search-results');
   const listDiv = document.getElementById('search-list');
   const countDiv = document.getElementById('search-count');
-  const mainCards = document.querySelectorAll('.dept-card');
 
-  if (!q) {
-    resultsDiv.classList.remove('active');
-    mainCards.forEach(c => c.style.display = '');
-    return;
-  }
+  document.querySelectorAll('.section-block').forEach(s => s.style.display = q ? 'none' : '');
+  if (!q) { resultsDiv.classList.remove('active'); return; }
 
   resultsDiv.classList.add('active');
-  mainCards.forEach(c => c.style.display = 'none');
-
   const hits = [];
-  for (const dept of Object.values(window._depts)) {
-    for (const lk of (dept.links || [])) {
-      const inTitle = lk.title.toLowerCase().includes(q);
-      const inNote = (lk.note || '').toLowerCase().includes(q);
-      if (inTitle || inNote) {
-        hits.push({ dept, lk });
+  for (const section of (window._data || [])) {
+    for (const card of section.cards) {
+      for (const lk of card.links) {
+        if (lk.title.toLowerCase().includes(q) || (lk.note||'').toLowerCase().includes(q)) {
+          hits.push({ section, card, lk });
+        }
       }
     }
   }
-
   countDiv.textContent = `找到 ${hits.length} 個結果`;
   listDiv.innerHTML = hits.length === 0
     ? `<div style="padding:16px;color:var(--text-muted);font-size:14px;">沒有符合「${q}」的連結</div>`
-    : hits.map(({ dept, lk }) => `
+    : hits.map(({ section, card, lk }) => `
         <a class="search-result-item" href="${lk.url}" target="_blank" rel="noopener">
-          <span class="result-dept">${dept.icon || ''} ${dept.name}</span>
+          <span class="result-dept">${section.name} › ${card.name}</span>
           <div>
-            <div class="result-title">${highlight(lk.title, q)}</div>
-            ${lk.note ? `<div class="result-note">${highlight(lk.note, q)}</div>` : ''}
+            <div class="result-title">${hl(lk.title, q)}</div>
+            ${lk.note ? `<div class="result-note">${hl(lk.note, q)}</div>` : ''}
           </div>
         </a>`).join('');
 }
-
-function highlight(text, q) {
-  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
-  return text.replace(re, '<mark>$1</mark>');
-}
+function hl(t,q){ return t.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>'); }
 
 // ── 密碼 ──
-const EDIT_PASSWORD = '073411373';
 function openPasswordModal() {
   if (window._editMode) { exitEdit(); return; }
   document.getElementById('pw-input').value = '';
@@ -661,22 +501,16 @@ function openPasswordModal() {
   setTimeout(() => document.getElementById('pw-input').focus(), 100);
 }
 function checkPassword() {
-  if (document.getElementById('pw-input').value === EDIT_PASSWORD) {
+  if (document.getElementById('pw-input').value === EDIT_PW) {
     closeModal('pw-modal');
-    enterEdit();
+    window._editMode = true;
+    document.body.classList.add('editing');
+    document.getElementById('edit-bar').classList.add('active');
+    document.getElementById('edit-btn').textContent = '✅ 編輯中';
+    initSortables();
   } else {
     document.getElementById('pw-error').style.display = 'block';
   }
-}
-window.openPasswordModal = openPasswordModal;
-window.checkPassword = checkPassword;
-
-function enterEdit() {
-  window._editMode = true;
-  document.body.classList.add('editing');
-  document.getElementById('edit-bar').classList.add('active');
-  document.getElementById('edit-btn').textContent = '✅ 編輯中';
-  initSortables();
 }
 function exitEdit() {
   window._editMode = false;
@@ -684,83 +518,96 @@ function exitEdit() {
   document.getElementById('edit-bar').classList.remove('active');
   document.getElementById('edit-btn').textContent = '✏️ 編輯';
 }
+window.openPasswordModal = openPasswordModal;
+window.checkPassword = checkPassword;
 window.exitEdit = exitEdit;
 
-// ── Sortable 拖曳 ──
+// ── Sortable ──
 let _sortables = [];
 function initSortables() {
-  _sortables.forEach(s => s.destroy());
+  _sortables.forEach(s => { try { s.destroy(); } catch(e){} });
   _sortables = [];
   if (typeof Sortable === 'undefined') { setTimeout(initSortables, 300); return; }
 
-  // 卡片排序
-  ['grid-admin', 'grid-tools'].forEach(gridId => {
-    const el = document.getElementById(gridId);
-    _sortables.push(Sortable.create(el, {
-      handle: '.drag-handle-card',
-      animation: 150,
-      ghostClass: 'sortable-ghost',
-      dragClass: 'sortable-drag',
-      onEnd: () => saveDeptOrder(gridId === 'grid-admin' ? 'admin' : 'tools')
+  // 區塊排序
+  _sortables.push(Sortable.create(document.getElementById('sections-container'), {
+    handle: '.section-drag', animation: 150, ghostClass: 'sortable-ghost',
+    onEnd: saveSecOrder
+  }));
+
+  // 卡片排序（每個 section）
+  document.querySelectorAll('.cards-grid').forEach(grid => {
+    const sid = grid.id.replace('cards-','');
+    _sortables.push(Sortable.create(grid, {
+      handle: '.drag-handle-card', animation: 150, ghostClass: 'sortable-ghost',
+      filter: '.add-card-btn',
+      onEnd: () => saveCardOrder(sid)
     }));
   });
 
-  // 連結排序（每個 card body）
+  // 連結排序
   document.querySelectorAll('.link-list').forEach(ul => {
-    const deptId = ul.id.replace('links-', '');
+    const cid = ul.id.replace('links-','');
+    const section = (window._data||[]).find(s => s.cards.some(c=>c.id===cid));
+    if (!section) return;
     _sortables.push(Sortable.create(ul, {
-      handle: '.drag-handle-link',
-      animation: 150,
-      ghostClass: 'sortable-ghost',
+      handle: '.drag-handle-link', animation: 150, ghostClass: 'sortable-ghost',
       filter: '.empty-note',
-      onEnd: () => saveLinkOrder(deptId)
+      onEnd: () => saveLinkOrder(section.id, cid)
     }));
   });
 }
 
-async function saveDeptOrder(section) {
-  const grid = document.getElementById(section === 'admin' ? 'grid-admin' : 'grid-tools');
-  const ids = [...grid.querySelectorAll('.dept-card')].map(c => c.dataset.id);
-  const batch = window._writeBatch(window._db);
-  ids.forEach((id, i) => {
-    window._depts[id].order = i + 1;
-    const ref = window._doc(window._collection(window._db, 'departments'), id);
-    batch.update(ref, { order: i + 1 });
+async function saveSecOrder() {
+  const ids = [...document.getElementById('sections-container').querySelectorAll('.section-block')].map(el=>el.dataset.id);
+  const { writeBatch, doc, collection } = window._fs;
+  const batch = writeBatch(window._db);
+  ids.forEach((id,i) => {
+    const s = window._data.find(x=>x.id===id); if(s) s.order=i+1;
+    batch.update(doc(collection(window._db,'sections'),id),{order:i+1});
   });
   await batch.commit();
-  // 更新序號顯示
-  renderAll();
 }
 
-async function saveLinkOrder(deptId) {
-  const ul = document.getElementById('links-' + deptId);
-  const ids = [...ul.querySelectorAll('.link-item[data-id]')].map(li => li.dataset.id);
-  const dept = window._depts[deptId];
-  const batch = window._writeBatch(window._db);
-  const newLinks = [];
-  ids.forEach((id, i) => {
-    const lk = dept.links.find(l => l.id === id);
-    if (lk) {
-      lk.order = i + 1;
-      newLinks.push(lk);
-      const ref = window._doc(window._collection(window._db, 'departments', deptId, 'links'), id);
-      batch.update(ref, { order: i + 1 });
-    }
+async function saveCardOrder(sectionId) {
+  const grid = document.getElementById('cards-'+sectionId);
+  const ids = [...grid.querySelectorAll('.dept-card')].map(el=>el.dataset.id);
+  const { writeBatch, doc, collection } = window._fs;
+  const batch = writeBatch(window._db);
+  const sec = window._data.find(s=>s.id===sectionId);
+  ids.forEach((id,i) => {
+    const c = sec.cards.find(x=>x.id===id); if(c) c.order=i+1;
+    batch.update(doc(collection(window._db,'sections',sectionId,'cards'),id),{order:i+1});
   });
-  dept.links = newLinks;
   await batch.commit();
-  renderAll();
+  await window._loadAll();
 }
 
-// ── 連結 Modal ──
-function openLinkModal(deptId, linkId = null) {
-  window._linkModal = { deptId, linkId };
-  const dept = window._depts[deptId];
-  const lk = linkId ? dept.links.find(l => l.id === linkId) : null;
+async function saveLinkOrder(sectionId, cardId) {
+  const ul = document.getElementById('links-'+cardId);
+  const ids = [...ul.querySelectorAll('.link-item[data-id]')].map(el=>el.dataset.id);
+  const { writeBatch, doc, collection } = window._fs;
+  const batch = writeBatch(window._db);
+  const sec = window._data.find(s=>s.id===sectionId);
+  const card = sec.cards.find(c=>c.id===cardId);
+  ids.forEach((id,i) => {
+    const lk = card.links.find(x=>x.id===id); if(lk) lk.order=i+1;
+    batch.update(doc(collection(window._db,'sections',sectionId,'cards',cardId,'links'),id),{order:i+1});
+  });
+  await batch.commit();
+  await window._loadAll();
+}
+
+// ── 連結 CRUD ──
+function openLinkModal(sectionId, cardId, linkId=null) {
+  window._linkCtx = { sectionId, cardId, linkId };
+  const sec = window._data.find(s=>s.id===sectionId);
+  const card = sec.cards.find(c=>c.id===cardId);
+  const lk = linkId ? card.links.find(l=>l.id===linkId) : null;
   document.getElementById('link-modal-title').textContent = lk ? '編輯連結' : '新增連結';
   document.getElementById('lm-title').value = lk ? lk.title : '';
   document.getElementById('lm-url').value = lk ? lk.url : '';
-  document.getElementById('lm-note').value = lk ? (lk.note || '') : '';
+  document.getElementById('lm-note').value = lk ? (lk.note||'') : '';
   document.getElementById('link-modal').classList.add('active');
   setTimeout(() => document.getElementById('lm-title').focus(), 100);
 }
@@ -771,110 +618,134 @@ async function saveLinkModal() {
   const url = document.getElementById('lm-url').value.trim();
   const note = document.getElementById('lm-note').value.trim();
   if (!title || !url) { alert('請填寫標題和網址'); return; }
-
-  const { deptId, linkId } = window._linkModal;
-  const dept = window._depts[deptId];
+  const { sectionId, cardId, linkId } = window._linkCtx;
+  const { doc, collection, setDoc } = window._fs;
   const db = window._db;
-
+  const sec = window._data.find(s=>s.id===sectionId);
+  const card = sec.cards.find(c=>c.id===cardId);
   if (linkId) {
-    // 編輯
-    const lk = dept.links.find(l => l.id === linkId);
-    lk.title = title; lk.url = url; lk.note = note;
-    await window._setDoc(window._doc(window._collection(db, 'departments', deptId, 'links'), linkId),
-      { title, url, note, order: lk.order }, { merge: true });
+    const lk = card.links.find(l=>l.id===linkId);
+    Object.assign(lk, { title, url, note });
+    await setDoc(doc(collection(db,'sections',sectionId,'cards',cardId,'links'),linkId),{title,url,note,order:lk.order},{merge:true});
   } else {
-    // 新增
-    const order = (dept.links.length || 0) + 1;
-    const ref = window._doc(window._collection(db, 'departments', deptId, 'links'));
-    await window._setDoc(ref, { title, url, note, order });
-    dept.links.push({ id: ref.id, title, url, note, order });
+    const order = card.links.length + 1;
+    const ref = doc(collection(db,'sections',sectionId,'cards',cardId,'links'));
+    await setDoc(ref, {title, url, note, order});
+    card.links.push({ id: ref.id, title, url, note, order });
   }
-
   closeModal('link-modal');
   await window._loadAll();
 }
 window.saveLinkModal = saveLinkModal;
 
-async function deleteLinkItem(deptId, linkId) {
-  if (!confirm('確定要刪除這個連結？')) return;
-  await window._deleteDoc(window._doc(window._collection(window._db, 'departments', deptId, 'links'), linkId));
-  const dept = window._depts[deptId];
-  dept.links = dept.links.filter(l => l.id !== linkId);
+async function deleteLink(sectionId, cardId, linkId) {
+  if (!confirm('確定刪除此連結？')) return;
+  const { doc, collection, deleteDoc } = window._fs;
+  await deleteDoc(doc(collection(window._db,'sections',sectionId,'cards',cardId,'links'),linkId));
   await window._loadAll();
 }
-window.deleteLinkItem = deleteLinkItem;
+window.deleteLink = deleteLink;
 
-// ── 處室 Modal ──
-function addDeptCard() {
-  window._deptModal = { deptId: null };
-  document.getElementById('dept-modal-title').textContent = '新增處室卡片';
-  document.getElementById('dm-name').value = '';
-  document.getElementById('dm-icon').value = '';
-  document.getElementById('dm-section').value = 'admin';
-  document.getElementById('dept-modal').classList.add('active');
-  setTimeout(() => document.getElementById('dm-name').focus(), 100);
+// ── 卡片 CRUD ──
+function addCard(sectionId) {
+  window._cardCtx = { sectionId, cardId: null };
+  document.getElementById('card-modal-title').textContent = '新增組別卡片';
+  document.getElementById('cm-name').value = '';
+  document.getElementById('cm-icon').value = '';
+  document.getElementById('card-modal').classList.add('active');
+  setTimeout(() => document.getElementById('cm-name').focus(), 100);
 }
-window.addDeptCard = addDeptCard;
-
-function editDeptCard(deptId) {
-  const dept = window._depts[deptId];
-  window._deptModal = { deptId };
-  document.getElementById('dept-modal-title').textContent = '編輯處室';
-  document.getElementById('dm-name').value = dept.name;
-  document.getElementById('dm-icon').value = dept.icon || '';
-  document.getElementById('dm-section').value = dept.section || 'admin';
-  document.getElementById('dept-modal').classList.add('active');
+function editCard(sectionId, cardId) {
+  const sec = window._data.find(s=>s.id===sectionId);
+  const card = sec.cards.find(c=>c.id===cardId);
+  window._cardCtx = { sectionId, cardId };
+  document.getElementById('card-modal-title').textContent = '編輯卡片';
+  document.getElementById('cm-name').value = card.name;
+  document.getElementById('cm-icon').value = card.icon || '';
+  document.getElementById('card-modal').classList.add('active');
 }
-window.editDeptCard = editDeptCard;
-
-async function saveDeptModal() {
-  const name = document.getElementById('dm-name').value.trim();
-  const icon = document.getElementById('dm-icon').value.trim();
-  const section = document.getElementById('dm-section').value;
+async function saveCardModal() {
+  const name = document.getElementById('cm-name').value.trim();
+  const icon = document.getElementById('cm-icon').value.trim();
   if (!name) { alert('請填寫名稱'); return; }
-
-  const { deptId } = window._deptModal;
+  const { sectionId, cardId } = window._cardCtx;
+  const { doc, collection, setDoc } = window._fs;
   const db = window._db;
-
-  if (deptId) {
-    await window._setDoc(window._doc(window._collection(db, 'departments'), deptId),
-      { name, icon, section }, { merge: true });
+  if (cardId) {
+    await setDoc(doc(collection(db,'sections',sectionId,'cards'),cardId),{name,icon},{merge:true});
   } else {
-    const sameSection = Object.values(window._depts).filter(d => d.section === section);
-    const order = sameSection.length + 1;
-    const ref = window._doc(window._collection(db, 'departments'));
-    await window._setDoc(ref, { name, icon, section, order });
+    const sec = window._data.find(s=>s.id===sectionId);
+    const order = sec.cards.length + 1;
+    const ref = doc(collection(db,'sections',sectionId,'cards'));
+    await setDoc(ref,{name,icon,order});
   }
-
-  closeModal('dept-modal');
+  closeModal('card-modal');
   await window._loadAll();
 }
-window.saveDeptModal = saveDeptModal;
-
-async function deleteDeptCard(deptId) {
-  const dept = window._depts[deptId];
-  if (!confirm(`確定要刪除「${dept.name}」及其所有連結？`)) return;
-  // 先刪子集合連結
-  for (const lk of (dept.links || [])) {
-    await window._deleteDoc(window._doc(window._collection(window._db, 'departments', deptId, 'links'), lk.id));
-  }
-  await window._deleteDoc(window._doc(window._collection(window._db, 'departments'), deptId));
+async function deleteCard(sectionId, cardId) {
+  const sec = window._data.find(s=>s.id===sectionId);
+  const card = sec.cards.find(c=>c.id===cardId);
+  if (!confirm(`確定刪除「${card.name}」及其所有連結？`)) return;
+  const { doc, collection, deleteDoc } = window._fs;
+  for (const lk of card.links) await deleteDoc(doc(collection(window._db,'sections',sectionId,'cards',cardId,'links'),lk.id));
+  await deleteDoc(doc(collection(window._db,'sections',sectionId,'cards'),cardId));
   await window._loadAll();
 }
-window.deleteDeptCard = deleteDeptCard;
+window.addCard = addCard;
+window.editCard = editCard;
+window.saveCardModal = saveCardModal;
+window.deleteCard = deleteCard;
 
-// ── Modal 共用 ──
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
+// ── 區塊 CRUD ──
+function addSection() {
+  window._sectionCtx = { sectionId: null };
+  document.getElementById('section-modal-title').textContent = '新增處室區塊';
+  document.getElementById('sm-name').value = '';
+  document.getElementById('section-modal').classList.add('active');
+  setTimeout(() => document.getElementById('sm-name').focus(), 100);
 }
+function editSection(sectionId) {
+  const sec = window._data.find(s=>s.id===sectionId);
+  window._sectionCtx = { sectionId };
+  document.getElementById('section-modal-title').textContent = '編輯處室名稱';
+  document.getElementById('sm-name').value = sec.name;
+  document.getElementById('section-modal').classList.add('active');
+}
+async function saveSectionModal() {
+  const name = document.getElementById('sm-name').value.trim();
+  if (!name) { alert('請填寫名稱'); return; }
+  const { sectionId } = window._sectionCtx;
+  const { doc, collection, setDoc } = window._fs;
+  const db = window._db;
+  if (sectionId) {
+    await setDoc(doc(collection(db,'sections'),sectionId),{name},{merge:true});
+  } else {
+    const order = (window._data||[]).length + 1;
+    const ref = doc(collection(db,'sections'));
+    await setDoc(ref,{name,order});
+  }
+  closeModal('section-modal');
+  await window._loadAll();
+}
+async function deleteSection(sectionId) {
+  const sec = window._data.find(s=>s.id===sectionId);
+  if (!confirm(`確定刪除「${sec.name}」整個區塊和所有卡片？`)) return;
+  const { doc, collection, deleteDoc } = window._fs;
+  for (const card of sec.cards) {
+    for (const lk of card.links) await deleteDoc(doc(collection(window._db,'sections',sectionId,'cards',card.id,'links'),lk.id));
+    await deleteDoc(doc(collection(window._db,'sections',sectionId,'cards'),card.id));
+  }
+  await deleteDoc(doc(collection(window._db,'sections'),sectionId));
+  await window._loadAll();
+}
+window.addSection = addSection;
+window.editSection = editSection;
+window.saveSectionModal = saveSectionModal;
+window.deleteSection = deleteSection;
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 window.closeModal = closeModal;
-
-// 點遮罩關閉
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) overlay.classList.remove('active');
-  });
-});
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('active'); }));
 </script>
 </body>
 </html>
