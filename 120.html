@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教學組 | 新莊國小 行政連結網</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card-bg: #ffffff;
+    --primary: #1a56a0;
+    --primary-light: #e8f0fb;
+    --text: #1e2530;
+    --text-muted: #6b7280;
+    --border: #e2e8f0;
+    --danger: #dc2626;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: var(--primary); color: #fff; padding: 0 24px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .back-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; transition: background 0.15s; }
+  .back-link:hover { background: rgba(255,255,255,0.15); }
+  header h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.03em; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  #search-box {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+    padding: 6px 14px 6px 36px; color: #fff; font-size: 14px; width: 180px; outline: none;
+    transition: background 0.2s, width 0.3s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='white' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 10px center;
+  }
+  #search-box::placeholder { color: rgba(255,255,255,0.6); }
+  #search-box:focus { background-color: rgba(255,255,255,0.25); width: 220px; }
+  #edit-btn {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: #fff;
+    border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s;
+  }
+  #edit-btn:hover { background: rgba(255,255,255,0.25); }
+
+  #edit-bar {
+    display: none; background: #1a2540; color: #fff; padding: 8px 24px; font-size: 13px;
+    align-items: center; gap: 12px; position: sticky; top: 56px; z-index: 99;
+  }
+  #edit-bar.active { display: flex; }
+  #edit-bar span { flex: 1; }
+  .bar-btn { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+  .bar-btn.danger { border-color: #f87171; color: #f87171; }
+  .bar-btn:hover { background: rgba(255,255,255,0.1); }
+
+  main { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .page-title { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .page-title .emoji { font-size: 28px; }
+  .page-title h2 { font-size: 20px; font-weight: 700; }
+  .page-title .count { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+
+  .list-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+
+  .link-list { list-style: none; }
+  .link-item {
+    display: flex; align-items: flex-start; padding: 13px 16px; gap: 12px;
+    border-bottom: 1px solid var(--border); transition: background 0.15s;
+  }
+  .link-item:last-child { border-bottom: none; }
+  .link-item:hover { background: #f8fafc; }
+
+  .drag-handle { display: none; cursor: grab; color: #ccc; font-size: 17px; padding: 2px 2px 0; flex-shrink: 0; }
+  .editing .drag-handle { display: block; }
+
+  .link-num {
+    font-size: 12px; font-weight: 700; color: var(--primary); background: var(--primary-light);
+    border-radius: 5px; padding: 3px 8px; min-width: 30px; text-align: center; flex-shrink: 0; margin-top: 1px;
+  }
+  .link-content { flex: 1; min-width: 0; }
+  .link-title { font-size: 15px; color: var(--primary); text-decoration: none; font-weight: 500; display: block; }
+  .link-title:hover { text-decoration: underline; }
+  .link-note { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+
+  .link-actions { display: none; gap: 5px; flex-shrink: 0; }
+  .editing .link-actions { display: flex; }
+  .link-actions button {
+    background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px;
+    font-size: 12px; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+  }
+  .link-actions button:hover { border-color: var(--primary); color: var(--primary); }
+  .link-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
+
+  .add-link-btn {
+    display: none; width: 100%; padding: 13px 16px; background: none; border: none;
+    border-top: 1px solid var(--border); color: var(--primary); font-size: 14px; font-weight: 500;
+    cursor: pointer; text-align: left; transition: background 0.15s;
+  }
+  .add-link-btn:hover { background: var(--primary-light); }
+  .editing .add-link-btn { display: block; }
+
+  .empty-note { color: var(--text-muted); font-size: 14px; padding: 30px 16px; text-align: center; }
+
+  /* 搜尋結果高亮 */
+  mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
+  .no-match { display: none; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--card-bg); border-radius: var(--radius); padding: 24px; width: 420px; max-width: 90vw; box-shadow: var(--shadow-lg); }
+  .modal h3 { font-size: 16px; margin-bottom: 16px; }
+  .modal label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s; }
+  .modal input:focus, .modal textarea:focus { border-color: var(--primary); }
+  .modal textarea { resize: vertical; min-height: 70px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: 14px; cursor: pointer; }
+  .btn-save { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 14px; cursor: pointer; }
+  .btn-save:hover { background: #134580; }
+  #pw-error { color: var(--danger); font-size: 13px; margin-top: 6px; display: none; }
+  .sortable-ghost { opacity: 0.4; }
+
+  @media (max-width: 500px) {
+    header h1 { font-size: 14px; }
+    #search-box { width: 110px; }
+    #search-box:focus { width: 140px; }
+    .back-link span.txt { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a class="back-link" href="index.html">← <span class="txt">返回首頁</span></a>
+    <h1>📖 教學組</h1>
+  </div>
+  <div class="header-right">
+    <input type="search" id="search-box" placeholder="搜尋…" autocomplete="off">
+    <button id="edit-btn" onclick="openPasswordModal()">✏️ 編輯</button>
+  </div>
+</header>
+
+<div id="edit-bar">
+  <span>✏️ 編輯模式 — 可拖曳排序、新增、編輯連結</span>
+  <button class="bar-btn danger" onclick="exitEdit()">結束編輯</button>
+</div>
+
+<main>
+  <div class="page-title">
+    <span class="emoji">📖</span>
+    <h2>教學組常用連結</h2>
+    <span class="count" id="link-count"></span>
+  </div>
+
+  <div class="list-card">
+    <ul class="link-list" id="link-list"></ul>
+    <button class="add-link-btn" onclick="openLinkModal()">＋ 新增連結</button>
+  </div>
+</main>
+
+<!-- 密碼 Modal -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal">
+    <h3>🔐 進入編輯模式</h3>
+    <label>密碼</label>
+    <input type="password" id="pw-input" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')checkPassword()">
+    <div id="pw-error">密碼錯誤，請再試一次</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('pw-modal')">取消</button>
+      <button class="btn-save" onclick="checkPassword()">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- 連結 Modal -->
+<div class="modal-overlay" id="link-modal">
+  <div class="modal">
+    <h3 id="link-modal-title">新增連結</h3>
+    <label>連結標題 *</label>
+    <input type="text" id="lm-title" placeholder="例：成績輸入系統">
+    <label>網址 *</label>
+    <input type="url" id="lm-url" placeholder="https://…">
+    <label>備註說明（選填）</label>
+    <textarea id="lm-note" placeholder="補充說明、使用時機…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('link-modal')">取消</button>
+      <button class="btn-save" onclick="saveLinkModal()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyCwf-zntZMo1adjRhG_P8KKFsJ5liHBPX4",
+  authDomain: "sjps-workbookmarks.firebaseapp.com",
+  projectId: "sjps-workbookmarks",
+  storageBucket: "sjps-workbookmarks.firebasestorage.app",
+  messagingSenderId: "186008632303",
+  appId: "1:186008632303:web:c74330f567d2dcbe4b541a",
+  measurementId: "G-1C0F8194M5"
+});
+const db = getFirestore(app);
+
+// ★★★ 每個組別頁面唯一要改的地方 ★★★
+const GROUP_ID = 'teaching'; // 教學組固定識別碼，其他組別頁面複製後改這個即可
+
+window._db = db;
+window._fs = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy };
+window._groupId = GROUP_ID;
+
+async function loadLinks() {
+  const linksSnap = await getDocs(query(collection(db, 'groups', GROUP_ID, 'links'), orderBy('order')));
+  window._links = linksSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderList();
+}
+window._loadLinks = loadLinks;
+await loadLinks();
+</script>
+
+<script>
+(function(){ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js'; document.head.appendChild(s); })();
+
+const EDIT_PW = '073411373';
+window._editMode = false;
+window._linkCtx = { linkId: null };
+
+function renderList() {
+  const ul = document.getElementById('link-list');
+  const links = window._links || [];
+  document.getElementById('link-count').textContent = `共 ${links.length} 個連結`;
+
+  ul.innerHTML = links.length === 0
+    ? `<li class="empty-note">尚無連結，點下方「新增連結」開始建立</li>`
+    : links.map((lk, i) => buildItem(lk, i+1)).join('');
+
+  applySearch();
+  if (window._editMode) initSortable();
+}
+window.renderList = renderList;
+
+function buildItem(lk, num) {
+  return `
+    <li class="link-item" data-id="${lk.id}" data-title="${escapeAttr(lk.title)}" data-note="${escapeAttr(lk.note||'')}">
+      <span class="drag-handle" title="拖曳排序">⠿</span>
+      <span class="link-num">${num}</span>
+      <div class="link-content">
+        <a class="link-title" href="${lk.url}" target="_blank" rel="noopener"
+           onclick="if(window._editMode)event.preventDefault()">${lk.title}</a>
+        ${lk.note ? `<div class="link-note">${lk.note}</div>` : ''}
+      </div>
+      <div class="link-actions">
+        <button onclick="openLinkModal('${lk.id}')">編輯</button>
+        <button class="del" onclick="deleteLink('${lk.id}')">刪除</button>
+      </div>
+    </li>`;
+}
+function escapeAttr(s){ return s.replace(/"/g,'&quot;'); }
+
+// ── 搜尋 ──
+document.getElementById('search-box').addEventListener('input', applySearch);
+function applySearch() {
+  const q = document.getElementById('search-box').value.trim().toLowerCase();
+  document.querySelectorAll('.link-item').forEach(li => {
+    const title = (li.dataset.title||'').toLowerCase();
+    const note = (li.dataset.note||'').toLowerCase();
+    li.style.display = (!q || title.includes(q) || note.includes(q)) ? '' : 'none';
+  });
+}
+
+// ── 密碼 ──
+function openPasswordModal() {
+  if (window._editMode) { exitEdit(); return; }
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  document.getElementById('pw-modal').classList.add('active');
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+function checkPassword() {
+  if (document.getElementById('pw-input').value === EDIT_PW) {
+    closeModal('pw-modal');
+    window._editMode = true;
+    document.body.classList.add('editing');
+    document.getElementById('edit-bar').classList.add('active');
+    document.getElementById('edit-btn').textContent = '✅ 編輯中';
+    initSortable();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+  }
+}
+function exitEdit() {
+  window._editMode = false;
+  document.body.classList.remove('editing');
+  document.getElementById('edit-bar').classList.remove('active');
+  document.getElementById('edit-btn').textContent = '✏️ 編輯';
+}
+window.openPasswordModal = openPasswordModal;
+window.checkPassword = checkPassword;
+window.exitEdit = exitEdit;
+
+// ── Sortable ──
+let _sortable = null;
+function initSortable() {
+  if (_sortable) { try { _sortable.destroy(); } catch(e){} }
+  if (typeof Sortable === 'undefined') { setTimeout(initSortable, 300); return; }
+  _sortable = Sortable.create(document.getElementById('link-list'), {
+    handle: '.drag-handle', animation: 150, ghostClass: 'sortable-ghost',
+    filter: '.empty-note',
+    onEnd: saveOrder
+  });
+}
+
+async function saveOrder() {
+  const ids = [...document.querySelectorAll('.link-item[data-id]')].map(li => li.dataset.id);
+  const { writeBatch, doc, collection } = window._fs;
+  const batch = writeBatch(window._db);
+  ids.forEach((id, i) => {
+    const lk = window._links.find(l => l.id === id);
+    if (lk) lk.order = i + 1;
+    batch.update(doc(collection(window._db, 'groups', window._groupId, 'links'), id), { order: i + 1 });
+  });
+  await batch.commit();
+  renderList();
+}
+
+// ── 連結 CRUD ──
+function openLinkModal(linkId = null) {
+  window._linkCtx = { linkId };
+  const lk = linkId ? window._links.find(l => l.id === linkId) : null;
+  document.getElementById('link-modal-title').textContent = lk ? '編輯連結' : '新增連結';
+  document.getElementById('lm-title').value = lk ? lk.title : '';
+  document.getElementById('lm-url').value = lk ? lk.url : '';
+  document.getElementById('lm-note').value = lk ? (lk.note || '') : '';
+  document.getElementById('link-modal').classList.add('active');
+  setTimeout(() => document.getElementById('lm-title').focus(), 100);
+}
+window.openLinkModal = openLinkModal;
+
+async function saveLinkModal() {
+  const title = document.getElementById('lm-title').value.trim();
+  const url = document.getElementById('lm-url').value.trim();
+  const note = document.getElementById('lm-note').value.trim();
+  if (!title || !url) { alert('請填寫標題和網址'); return; }
+
+  const { linkId } = window._linkCtx;
+  const { doc, collection, setDoc } = window._fs;
+  const db = window._db;
+  const groupId = window._groupId;
+
+  if (linkId) {
+    const lk = window._links.find(l => l.id === linkId);
+    await setDoc(doc(collection(db, 'groups', groupId, 'links'), linkId), { title, url, note, order: lk.order }, { merge: true });
+  } else {
+    const order = (window._links.length || 0) + 1;
+    const ref = doc(collection(db, 'groups', groupId, 'links'));
+    await setDoc(ref, { title, url, note, order });
+  }
+  closeModal('link-modal');
+  await window._loadLinks();
+}
+window.saveLinkModal = saveLinkModal;
+
+async function deleteLink(linkId) {
+  if (!confirm('確定要刪除這個連結？')) return;
+  const { doc, collection, deleteDoc } = window._fs;
+  await deleteDoc(doc(collection(window._db, 'groups', window._groupId, 'links'), linkId));
+  await window._loadLinks();
+}
+window.deleteLink = deleteLink;
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+window.closeModal = closeModal;
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); }));
+</script>
+</body>
+</html>
