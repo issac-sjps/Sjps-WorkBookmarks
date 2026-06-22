@@ -300,6 +300,8 @@ window._loadPinned = loadPinned;
 
 await initPinnedDefaults();
 await loadPinned();
+
+async function loadLinks() {
   const linksSnap = await getDocs(query(collection(db, 'groups', GROUP_ID, 'links'), orderBy('order')));
   window._links = linksSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   renderList();
