@@ -65,6 +65,38 @@
 
   .list-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 
+  /* ── 固定常駐連結區 ── */
+  .pinned-section { margin-bottom: 22px; }
+  .pinned-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 8px; padding-left: 2px; display: flex; align-items: center; gap: 6px; }
+  .pinned-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .pinned-list { list-style: none; }
+  .pinned-item {
+    display: flex; align-items: center; padding: 12px 16px; gap: 12px;
+    border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.15s;
+  }
+  .pinned-item:last-child { border-bottom: none; }
+  .pinned-item:hover { background: #f8fafc; }
+  .pinned-num {
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--accent, #e8a020);
+    border-radius: 5px; padding: 3px 8px; min-width: 30px; text-align: center; flex-shrink: 0;
+  }
+  .pinned-favicon { width: 22px; height: 22px; border-radius: 4px; flex-shrink: 0; object-fit: contain; background: #f1f5f9; }
+  .pinned-title { font-size: 15px; color: var(--primary); font-weight: 500; flex: 1; }
+  .pinned-drag { display: none; cursor: grab; color: #ccc; font-size: 16px; flex-shrink: 0; }
+  .editing .pinned-drag { display: block; }
+  .pinned-actions { display: none; gap: 5px; flex-shrink: 0; }
+  .editing .pinned-actions { display: flex; }
+  .pinned-actions button { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; font-size: 12px; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+  .pinned-actions button:hover { border-color: var(--primary); color: var(--primary); }
+  .pinned-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
+  .add-pinned-btn {
+    display: none; width: 100%; padding: 11px 16px; background: none; border: none;
+    border-top: 1px solid var(--border); color: var(--primary); font-size: 13px; font-weight: 500;
+    cursor: pointer; text-align: left; transition: background 0.15s;
+  }
+  .add-pinned-btn:hover { background: var(--primary-light); }
+  .editing .add-pinned-btn { display: block; }
+
   .link-list { list-style: none; }
   .link-item {
     display: flex; align-items: flex-start; padding: 13px 16px; gap: 12px;
@@ -151,6 +183,14 @@
 </div>
 
 <main>
+  <div class="pinned-section">
+    <div class="pinned-label">📌 全校共用連結</div>
+    <div class="pinned-card">
+      <ul class="pinned-list" id="pinned-list"></ul>
+      <button class="add-pinned-btn" id="add-pinned-btn" onclick="openPinnedModal()">＋ 新增共用連結</button>
+    </div>
+  </div>
+
   <div class="page-title">
     <span class="emoji">📖</span>
     <h2>教學組常用連結</h2>
@@ -194,6 +234,21 @@
   </div>
 </div>
 
+<!-- 共用連結 Modal -->
+<div class="modal-overlay" id="pinned-modal">
+  <div class="modal">
+    <h3 id="pinned-modal-title">新增共用連結</h3>
+    <label>連結標題 *</label>
+    <input type="text" id="pm-title" placeholder="例：新莊國小（首頁）">
+    <label>網址 *</label>
+    <input type="url" id="pm-url" placeholder="https://…">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('pinned-modal')">取消</button>
+      <button class="btn-save" onclick="savePinnedModal()">儲存</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy }
@@ -217,7 +272,34 @@ window._db = db;
 window._fs = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy };
 window._groupId = GROUP_ID;
 
-async function loadLinks() {
+// 全校共用固定連結 — 存在 Firebase 的 pinned_links 集合，所有組別頁面共用同一份
+
+async function initPinnedDefaults() {
+  const snap = await getDocs(collection(db, 'pinned_links'));
+  if (!snap.empty) return;
+  const defaults = [
+    { title: '新莊國小（首頁）', url: 'https://www.sjps.kh.edu.tw/index.php?WebID=85', order: 1 },
+    { title: '資訊服務（差勤系統）', url: 'https://portal.kh.edu.tw/', order: 2 },
+    { title: '校務行政（成績系統）', url: 'https://esas.kh.edu.tw/Login.action', order: 3 },
+    { title: '新莊點點通（晨會報告）', url: 'https://docs.google.com/document/d/1d3Se5060WI59FihnEM-rP8Ex-RA2Q6u0u2ZMjX-h7tI/edit', order: 4 },
+  ];
+  const batch = writeBatch(db);
+  for (const d of defaults) {
+    const ref = doc(collection(db, 'pinned_links'));
+    batch.set(ref, d);
+  }
+  await batch.commit();
+}
+
+async function loadPinned() {
+  const snap = await getDocs(query(collection(db, 'pinned_links'), orderBy('order')));
+  window._pinnedLinks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderPinned();
+}
+window._loadPinned = loadPinned;
+
+await initPinnedDefaults();
+await loadPinned();
   const linksSnap = await getDocs(query(collection(db, 'groups', GROUP_ID, 'links'), orderBy('order')));
   window._links = linksSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   renderList();
@@ -248,10 +330,14 @@ function renderList() {
 window.renderList = renderList;
 
 function buildItem(lk, num) {
+  let domain = '';
+  try { domain = new URL(lk.url).hostname; } catch(e) {}
+  const favicon = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
   return `
     <li class="link-item" data-id="${lk.id}" data-title="${escapeAttr(lk.title)}" data-note="${escapeAttr(lk.note||'')}">
       <span class="drag-handle" title="拖曳排序">⠿</span>
       <span class="link-num">${num}</span>
+      ${favicon ? `<img class="pinned-favicon" src="${favicon}" alt="" onerror="this.style.display='none'">` : ''}
       <div class="link-content">
         <a class="link-title" href="${lk.url}" target="_blank" rel="noopener"
            onclick="if(window._editMode)event.preventDefault()">${lk.title}</a>
@@ -276,6 +362,99 @@ function applySearch() {
   });
 }
 
+function renderPinned() {
+  const ul = document.getElementById('pinned-list');
+  const links = window._pinnedLinks || [];
+  ul.innerHTML = links.length === 0
+    ? `<li class="empty-note">尚無共用連結</li>`
+    : links.map((lk, i) => buildPinnedItem(lk, i+1)).join('');
+  if (window._editMode) initPinnedSortable();
+}
+window.renderPinned = renderPinned;
+
+function buildPinnedItem(lk, num) {
+  let domain = '';
+  try { domain = new URL(lk.url).hostname; } catch(e) {}
+  const favicon = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+  return `
+    <li class="pinned-item-row" data-id="${lk.id}" style="display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid var(--border);">
+      <span class="pinned-drag" title="拖曳排序">⠿</span>
+      <a class="pinned-item" href="${lk.url}" target="_blank" rel="noopener" style="border-bottom:none;padding:0;flex:1;display:flex;align-items:center;gap:12px;"
+         onclick="if(window._editMode)event.preventDefault()">
+        <span class="pinned-num">${num}</span>
+        ${favicon ? `<img class="pinned-favicon" src="${favicon}" alt="" onerror="this.style.display='none'">` : ''}
+        <span class="pinned-title">${lk.title}</span>
+      </a>
+      <div class="pinned-actions">
+        <button onclick="openPinnedModal('${lk.id}')">編輯</button>
+        <button class="del" onclick="deletePinned('${lk.id}')">刪除</button>
+      </div>
+    </li>`;
+}
+
+let _pinnedSortable = null;
+function initPinnedSortable() {
+  if (_pinnedSortable) { try { _pinnedSortable.destroy(); } catch(e){} }
+  if (typeof Sortable === 'undefined') { setTimeout(initPinnedSortable, 300); return; }
+  _pinnedSortable = Sortable.create(document.getElementById('pinned-list'), {
+    handle: '.pinned-drag', animation: 150, ghostClass: 'sortable-ghost',
+    filter: '.empty-note',
+    onEnd: savePinnedOrder
+  });
+}
+
+async function savePinnedOrder() {
+  const ids = [...document.querySelectorAll('.pinned-item-row[data-id]')].map(li => li.dataset.id);
+  const { writeBatch, doc, collection } = window._fs;
+  const batch = writeBatch(window._db);
+  ids.forEach((id, i) => {
+    const lk = window._pinnedLinks.find(l => l.id === id);
+    if (lk) lk.order = i + 1;
+    batch.update(doc(collection(window._db, 'pinned_links'), id), { order: i + 1 });
+  });
+  await batch.commit();
+  renderPinned();
+}
+
+function openPinnedModal(linkId = null) {
+  window._pinnedCtx = { linkId };
+  const lk = linkId ? window._pinnedLinks.find(l => l.id === linkId) : null;
+  document.getElementById('pinned-modal-title').textContent = lk ? '編輯共用連結' : '新增共用連結';
+  document.getElementById('pm-title').value = lk ? lk.title : '';
+  document.getElementById('pm-url').value = lk ? lk.url : '';
+  document.getElementById('pinned-modal').classList.add('active');
+  setTimeout(() => document.getElementById('pm-title').focus(), 100);
+}
+window.openPinnedModal = openPinnedModal;
+
+async function savePinnedModal() {
+  const title = document.getElementById('pm-title').value.trim();
+  const url = document.getElementById('pm-url').value.trim();
+  if (!title || !url) { alert('請填寫標題和網址'); return; }
+  const { linkId } = window._pinnedCtx;
+  const { doc, collection, setDoc } = window._fs;
+  const db = window._db;
+  if (linkId) {
+    const lk = window._pinnedLinks.find(l => l.id === linkId);
+    await setDoc(doc(collection(db, 'pinned_links'), linkId), { title, url, order: lk.order }, { merge: true });
+  } else {
+    const order = (window._pinnedLinks.length || 0) + 1;
+    const ref = doc(collection(db, 'pinned_links'));
+    await setDoc(ref, { title, url, order });
+  }
+  closeModal('pinned-modal');
+  await window._loadPinned();
+}
+window.savePinnedModal = savePinnedModal;
+
+async function deletePinned(linkId) {
+  if (!confirm('確定要刪除這個共用連結？（會影響所有組別頁面）')) return;
+  const { doc, collection, deleteDoc } = window._fs;
+  await deleteDoc(doc(collection(window._db, 'pinned_links'), linkId));
+  await window._loadPinned();
+}
+window.deletePinned = deletePinned;
+
 // ── 密碼 ──
 function openPasswordModal() {
   if (window._editMode) { exitEdit(); return; }
@@ -292,6 +471,7 @@ function checkPassword() {
     document.getElementById('edit-bar').classList.add('active');
     document.getElementById('edit-btn').textContent = '✅ 編輯中';
     initSortable();
+    initPinnedSortable();
   } else {
     document.getElementById('pw-error').style.display = 'block';
   }
