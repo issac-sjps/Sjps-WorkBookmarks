@@ -481,7 +481,7 @@ function applySearch() {
 
 function renderPinned() {
   const ul = document.getElementById('pinned-list');
-  const links = window._pinnedLinks || [];
+  const links = [...(window._pinnedLinks || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
   ul.innerHTML = links.length === 0
     ? `<li class="empty-note">尚無共用連結</li>`
     : links.map((lk, i) => buildPinnedItem(lk, i+1)).join('');
