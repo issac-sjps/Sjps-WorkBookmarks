@@ -137,6 +137,47 @@
 
   .empty-note { color: var(--text-muted); font-size: 14px; padding: 30px 16px; text-align: center; }
 
+  /* ── 連結底色標記 ── */
+  .link-item[data-color="red"]    { background: rgba(239, 68, 68, 0.10); }
+  .link-item[data-color="orange"] { background: rgba(249, 115, 22, 0.11); }
+  .link-item[data-color="yellow"] { background: rgba(234, 179, 8, 0.14); }
+  .link-item[data-color="green"]  { background: rgba(34, 197, 94, 0.11); }
+  .link-item[data-color="blue"]   { background: rgba(37, 99, 235, 0.16); }
+  .link-item[data-color="purple"] { background: rgba(168, 85, 247, 0.13); }
+  .link-item[data-color="pink"]   { background: rgba(236, 72, 153, 0.11); }
+  .link-item[data-color]:hover { filter: brightness(0.97); }
+
+  /* ── Modal 顏色選擇器 ── */
+  .color-swatches { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .color-swatch {
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.15s; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .color-swatch.selected { border-color: var(--text); transform: scale(1.12); }
+  .color-swatch[data-color=""]       { background: #fff; border: 2px solid var(--border); }
+  .color-swatch[data-color="red"]    { background: #ef4444; }
+  .color-swatch[data-color="orange"] { background: #f97316; }
+  .color-swatch[data-color="yellow"] { background: #eab308; }
+  .color-swatch[data-color="green"]  { background: #22c55e; }
+  .color-swatch[data-color="blue"]   { background: #3b82f6; }
+  .color-swatch[data-color="purple"] { background: #a855f7; }
+  .color-swatch[data-color="pink"]   { background: #ec4899; }
+  .color-swatch .check { color: #fff; font-size: 14px; display: none; }
+  .color-swatch.selected .check { display: block; }
+  .color-swatch[data-color=""].selected .check { color: var(--text); }
+
+  /* ── 排序工具列 ── */
+  .sort-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .sort-toolbar .sort-label { font-size: 12px; color: var(--text-muted); margin-right: 2px; }
+  .sort-btn {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font-size: 12px; cursor: pointer; color: var(--text-muted);
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .sort-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .sort-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
   /* 搜尋結果高亮 */
   mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
   .no-match { display: none; }
@@ -198,6 +239,13 @@
     <span class="count" id="link-count"></span>
   </div>
 
+  <div class="sort-toolbar">
+    <span class="sort-label">排序方式：</span>
+    <button class="sort-btn active" id="sort-default" onclick="setSortMode('default')">🔢 自訂順序</button>
+    <button class="sort-btn" id="sort-color" onclick="setSortMode('color')">🎨 依顏色</button>
+    <button class="sort-btn" id="sort-recent" onclick="setSortMode('recent')">🕘 最近使用</button>
+  </div>
+
   <div class="list-card">
     <ul class="link-list" id="link-list"></ul>
     <button class="add-link-btn" onclick="openLinkModal()">＋ 新增連結</button>
@@ -228,6 +276,17 @@
     <input type="url" id="lm-url" placeholder="https://…">
     <label>備註說明（選填）</label>
     <textarea id="lm-note" placeholder="補充說明、使用時機…"></textarea>
+    <label>底色標記（選填，用來分類）</label>
+    <div class="color-swatches" id="lm-color-swatches">
+      <div class="color-swatch selected" data-color="" onclick="selectColor(this)"><span class="check">✕</span></div>
+      <div class="color-swatch" data-color="red" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="orange" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="yellow" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="green" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="blue" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="purple" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="pink" onclick="selectColor(this)"><span class="check">✓</span></div>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('link-modal')">取消</button>
       <button class="btn-save" onclick="saveLinkModal()">儲存</button>
@@ -317,18 +376,47 @@ await loadLinks();
 const EDIT_PW = '073411373';
 window._editMode = false;
 window._linkCtx = { linkId: null };
+window._sortMode = 'default'; // 'default' | 'color' | 'recent'
+
+const COLOR_ORDER = ['red','orange','yellow','green','blue','purple','pink',''];
+
+function setSortMode(mode) {
+  window._sortMode = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sort-' + mode).classList.add('active');
+  renderList();
+}
+window.setSortMode = setSortMode;
+
+function getSortedLinks() {
+  const links = [...(window._links || [])];
+  if (window._sortMode === 'color') {
+    links.sort((a, b) => {
+      const ca = COLOR_ORDER.indexOf(a.color || '');
+      const cb = COLOR_ORDER.indexOf(b.color || '');
+      if (ca !== cb) return ca - cb;
+      return (a.order || 0) - (b.order || 0);
+    });
+  } else if (window._sortMode === 'recent') {
+    links.sort((a, b) => (b.lastClicked || 0) - (a.lastClicked || 0));
+  } else {
+    links.sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+  return links;
+}
 
 function renderList() {
   const ul = document.getElementById('link-list');
-  const links = window._links || [];
+  const links = getSortedLinks();
   document.getElementById('link-count').textContent = `共 ${links.length} 個連結`;
 
   ul.innerHTML = links.length === 0
     ? `<li class="empty-note">尚無連結，點下方「新增連結」開始建立</li>`
-    : links.map((lk, i) => buildItem(lk, i+1)).join('');
+    : links.map((lk, i) => buildItem(lk, window._sortMode === 'default' ? i+1 : (window._links.findIndex(l=>l.id===lk.id)+1))).join('');
 
   applySearch();
-  if (window._editMode) initSortable();
+  // 拖曳排序只在「自訂順序」模式下啟用，避免在暫時檢視模式下拖曳打亂真實順序
+  if (window._editMode && window._sortMode === 'default') initSortable();
 }
 window.renderList = renderList;
 
@@ -337,8 +425,9 @@ function buildItem(lk, num) {
   try { domain = new URL(lk.url).hostname; } catch(e) {}
   const favicon = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
   const lastUsedText = formatLastUsed(lk.lastClicked);
+  const colorAttr = lk.color ? ` data-color="${lk.color}"` : '';
   return `
-    <li class="link-item" data-id="${lk.id}" data-title="${escapeAttr(lk.title)}" data-note="${escapeAttr(lk.note||'')}">
+    <li class="link-item" data-id="${lk.id}" data-title="${escapeAttr(lk.title)}" data-note="${escapeAttr(lk.note||'')}"${colorAttr}>
       <span class="drag-handle" title="拖曳排序">⠿</span>
       <span class="link-num">${num}</span>
       ${favicon ? `<img class="pinned-favicon" src="${favicon}" alt="" onerror="this.style.display='none'">` : ''}
@@ -540,6 +629,12 @@ async function saveOrder() {
 }
 
 // ── 連結 CRUD ──
+function selectColor(el) {
+  el.parentElement.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+window.selectColor = selectColor;
+
 function openLinkModal(linkId = null) {
   window._linkCtx = { linkId };
   const lk = linkId ? window._links.find(l => l.id === linkId) : null;
@@ -547,6 +642,10 @@ function openLinkModal(linkId = null) {
   document.getElementById('lm-title').value = lk ? lk.title : '';
   document.getElementById('lm-url').value = lk ? lk.url : '';
   document.getElementById('lm-note').value = lk ? (lk.note || '') : '';
+  const targetColor = lk ? (lk.color || '') : '';
+  document.querySelectorAll('#lm-color-swatches .color-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.color === targetColor);
+  });
   document.getElementById('link-modal').classList.add('active');
   setTimeout(() => document.getElementById('lm-title').focus(), 100);
 }
@@ -556,6 +655,8 @@ async function saveLinkModal() {
   const title = document.getElementById('lm-title').value.trim();
   const url = document.getElementById('lm-url').value.trim();
   const note = document.getElementById('lm-note').value.trim();
+  const selectedSwatch = document.querySelector('#lm-color-swatches .color-swatch.selected');
+  const color = selectedSwatch ? selectedSwatch.dataset.color : '';
   if (!title || !url) { alert('請填寫標題和網址'); return; }
 
   const { linkId } = window._linkCtx;
@@ -565,11 +666,11 @@ async function saveLinkModal() {
 
   if (linkId) {
     const lk = window._links.find(l => l.id === linkId);
-    await setDoc(doc(collection(db, 'groups', groupId, 'links'), linkId), { title, url, note, order: lk.order }, { merge: true });
+    await setDoc(doc(collection(db, 'groups', groupId, 'links'), linkId), { title, url, note, color, order: lk.order }, { merge: true });
   } else {
     const order = (window._links.length || 0) + 1;
     const ref = doc(collection(db, 'groups', groupId, 'links'));
-    await setDoc(ref, { title, url, note, order });
+    await setDoc(ref, { title, url, note, color, order });
   }
   closeModal('link-modal');
   await window._loadLinks();
