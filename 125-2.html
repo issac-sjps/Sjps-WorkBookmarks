@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>註冊組 | 新莊國小 行政連結網</title>
+<title>體育組 | 新莊國小 行政連結網</title>
 <style>
   :root {
     --bg: #f0f4f8;
@@ -170,7 +170,7 @@
 <header>
   <div class="header-left">
     <a class="back-link" href="index.html">← <span class="txt">返回首頁</span></a>
-    <h1>📋 註冊組</h1>
+    <h1>⚽ 體育組</h1>
   </div>
   <div class="header-right">
     <input type="search" id="search-box" placeholder="搜尋…" autocomplete="off">
@@ -193,8 +193,8 @@
   </div>
 
   <div class="page-title">
-    <span class="emoji">📋</span>
-    <h2>註冊組常用連結</h2>
+    <span class="emoji">⚽</span>
+    <h2>體育組常用連結</h2>
     <span class="count" id="link-count"></span>
   </div>
 
@@ -267,7 +267,7 @@ const app = initializeApp({
 const db = getFirestore(app);
 
 // ★★★ 每個組別頁面唯一要改的地方 ★★★
-const GROUP_ID = 'registration'; // 註冊組 固定識別碼
+const GROUP_ID = 'pe'; // 體育組 固定識別碼
 
 window._db = db;
 window._fs = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy };

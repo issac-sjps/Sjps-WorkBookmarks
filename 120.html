@@ -116,6 +116,7 @@
   .link-title { font-size: 15px; color: var(--primary); text-decoration: none; font-weight: 500; display: block; }
   .link-title:hover { text-decoration: underline; }
   .link-note { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+  .link-lastused { font-size: 11px; color: #aab2bd; flex-shrink: 0; white-space: nowrap; margin-top: 2px; align-self: flex-start; }
 
   .link-actions { display: none; gap: 5px; flex-shrink: 0; }
   .editing .link-actions { display: flex; }
@@ -266,7 +267,7 @@ const app = initializeApp({
 const db = getFirestore(app);
 
 // ★★★ 每個組別頁面唯一要改的地方 ★★★
-const GROUP_ID = 'teaching'; // 教學組固定識別碼，其他組別頁面複製後改這個即可
+const GROUP_ID = 'teaching'; // 教學組 固定識別碼
 
 window._db = db;
 window._fs = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy };
@@ -335,6 +336,7 @@ function buildItem(lk, num) {
   let domain = '';
   try { domain = new URL(lk.url).hostname; } catch(e) {}
   const favicon = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+  const lastUsedText = formatLastUsed(lk.lastClicked);
   return `
     <li class="link-item" data-id="${lk.id}" data-title="${escapeAttr(lk.title)}" data-note="${escapeAttr(lk.note||'')}">
       <span class="drag-handle" title="拖曳排序">⠿</span>
@@ -342,15 +344,39 @@ function buildItem(lk, num) {
       ${favicon ? `<img class="pinned-favicon" src="${favicon}" alt="" onerror="this.style.display='none'">` : ''}
       <div class="link-content">
         <a class="link-title" href="${lk.url}" target="_blank" rel="noopener"
-           onclick="if(window._editMode)event.preventDefault()">${lk.title}</a>
+           onclick="if(window._editMode){event.preventDefault();}else{trackClick('${lk.id}');}">${lk.title}</a>
         ${lk.note ? `<div class="link-note">${lk.note}</div>` : ''}
       </div>
+      <span class="link-lastused">🕘 ${lastUsedText}</span>
       <div class="link-actions">
         <button onclick="openLinkModal('${lk.id}')">編輯</button>
         <button class="del" onclick="deleteLink('${lk.id}')">刪除</button>
       </div>
     </li>`;
 }
+
+function formatLastUsed(ts) {
+  if (!ts) return '尚未使用過';
+  const d = new Date(ts);
+  const now = new Date();
+  const diffDays = Math.floor((now - d) / 86400000);
+  const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  if (diffDays === 0) return `上次使用：今天`;
+  if (diffDays === 1) return `上次使用：昨天`;
+  if (diffDays < 30) return `上次使用：${diffDays} 天前（${dateStr}）`;
+  return `上次使用：${dateStr}`;
+}
+
+async function trackClick(linkId) {
+  try {
+    const { doc, collection, setDoc } = window._fs;
+    const now = Date.now();
+    const lk = window._links.find(l => l.id === linkId);
+    if (lk) lk.lastClicked = now;
+    await setDoc(doc(collection(window._db, 'groups', window._groupId, 'links'), linkId), { lastClicked: now }, { merge: true });
+  } catch (e) { /* 記錄失敗不影響使用者開連結 */ }
+}
+window.trackClick = trackClick;
 function escapeAttr(s){ return s.replace(/"/g,'&quot;'); }
 
 // ── 搜尋 ──
