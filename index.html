@@ -167,7 +167,7 @@ function renderPinned(links) {
   ul.innerHTML = links.map((lk, i) => {
     let domain = '';
     try { domain = new URL(lk.url).hostname; } catch(e) {}
-    const favicon = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+    const favicon = domain ? `https://favicon.im/${domain}` : '';
     return `
       <a class="pinned-item" href="${lk.url}" target="_blank" rel="noopener">
         <span class="pinned-num">${i+1}</span>
