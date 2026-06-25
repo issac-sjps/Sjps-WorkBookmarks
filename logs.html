@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>操作紀錄 | 新莊國小 行政連結網</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card-bg: #ffffff;
+    --primary: #1a56a0;
+    --primary-light: #e8f0fb;
+    --text: #1e2530;
+    --text-muted: #6b7280;
+    --border: #e2e8f0;
+    --danger: #dc2626;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: #1a2540; color: #fff; padding: 0 24px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 17px; font-weight: 600; }
+  .back-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 6px; }
+  .back-link:hover { background: rgba(255,255,255,0.15); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar select, .toolbar input {
+    border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 13px;
+    font-family: inherit; background: var(--card-bg);
+  }
+  .toolbar button {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--text-muted);
+  }
+  .toolbar button.active { background: #1a2540; border-color: #1a2540; color: #fff; }
+  .toolbar .info { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+  .log-table { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .log-row {
+    display: grid; grid-template-columns: 130px 90px 90px 1fr 130px;
+    gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; align-items: center;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row.header { background: #f8fafc; font-weight: 600; color: var(--text-muted); font-size: 12px; }
+  .log-time { color: var(--text-muted); white-space: nowrap; }
+  .log-group { color: var(--primary); font-weight: 500; }
+  .log-action { font-weight: 500; }
+  .log-action.add { color: #16a34a; }
+  .log-action.edit { color: #ca8a04; }
+  .log-action.delete { color: var(--danger); }
+  .log-target { color: var(--text); word-break: break-all; }
+  .log-ip { color: var(--text-muted); font-family: monospace; font-size: 12px; }
+
+  .empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }
+
+  @media (max-width: 700px) {
+    .log-row { grid-template-columns: 1fr; gap: 4px; }
+    .log-row.header { display: none; }
+    .log-row:not(.header) { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📝 操作紀錄</h1>
+  <a class="back-link" href="index.html">← 返回首頁</a>
+</header>
+
+<main>
+  <div class="toolbar">
+    <button id="btn-30days" class="active" onclick="setRange(30)">近 30 天</button>
+    <button id="btn-all" onclick="setRange('all')">顯示全部</button>
+    <select id="filter-group" onchange="applyFilter()">
+      <option value="">全部組別</option>
+    </select>
+    <select id="filter-action" onchange="applyFilter()">
+      <option value="">全部操作</option>
+      <option value="add">新增連結</option>
+      <option value="edit">編輯連結</option>
+      <option value="delete">刪除連結</option>
+      <option value="pinned_add">新增共用連結</option>
+      <option value="pinned_edit">編輯共用連結</option>
+      <option value="pinned_delete">刪除共用連結</option>
+    </select>
+    <span class="info" id="result-count"></span>
+  </div>
+
+  <div class="log-table" id="log-table">
+    <div class="log-row header">
+      <span>時間</span>
+      <span>組別</span>
+      <span>操作</span>
+      <span>連結標題</span>
+      <span>IP</span>
+    </div>
+    <div id="log-rows"></div>
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy, limit }
+  from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyCwf-zntZMo1adjRhG_P8KKFsJ5liHBPX4",
+  authDomain: "sjps-workbookmarks.firebaseapp.com",
+  projectId: "sjps-workbookmarks",
+  storageBucket: "sjps-workbookmarks.firebasestorage.app",
+  messagingSenderId: "186008632303",
+  appId: "1:186008632303:web:c74330f567d2dcbe4b541a",
+  measurementId: "G-1C0F8194M5"
+});
+const db = getFirestore(app);
+
+async function loadLogs() {
+  const snap = await getDocs(query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(2000)));
+  window._allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  populateGroupFilter();
+  applyFilter();
+}
+window._loadLogs = loadLogs;
+await loadLogs();
+</script>
+
+<script>
+const ACTION_LABELS = {
+  add: '新增連結', edit: '編輯連結', delete: '刪除連結',
+  pinned_add: '新增共用連結', pinned_edit: '編輯共用連結', pinned_delete: '刪除共用連結'
+};
+
+window._rangeMode = 30; // 30 天 或 'all'
+
+function setRange(mode) {
+  window._rangeMode = mode;
+  document.getElementById('btn-30days').classList.toggle('active', mode === 30);
+  document.getElementById('btn-all').classList.toggle('active', mode === 'all');
+  applyFilter();
+}
+window.setRange = setRange;
+
+function populateGroupFilter() {
+  const groups = [...new Set((window._allLogs || []).map(l => l.groupLabel).filter(Boolean))];
+  const sel = document.getElementById('filter-group');
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g; opt.textContent = g;
+    sel.appendChild(opt);
+  });
+}
+
+function applyFilter() {
+  const groupFilter = document.getElementById('filter-group').value;
+  const actionFilter = document.getElementById('filter-action').value;
+  const now = Date.now();
+  const cutoff = window._rangeMode === 'all' ? 0 : now - (window._rangeMode * 86400000);
+
+  let logs = (window._allLogs || []).filter(l => (l.timestamp || 0) >= cutoff);
+  if (groupFilter) logs = logs.filter(l => l.groupLabel === groupFilter);
+  if (actionFilter) logs = logs.filter(l => l.action === actionFilter);
+
+  document.getElementById('result-count').textContent = `共 ${logs.length} 筆紀錄`;
+  renderRows(logs);
+}
+window.applyFilter = applyFilter;
+
+function renderRows(logs) {
+  const container = document.getElementById('log-rows');
+  if (logs.length === 0) {
+    container.innerHTML = `<div class="empty">這個篩選範圍內沒有紀錄</div>`;
+    return;
+  }
+  container.innerHTML = logs.map(l => {
+    const d = new Date(l.timestamp);
+    const timeStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const actionClass = l.action.includes('delete') ? 'delete' : l.action.includes('edit') ? 'edit' : 'add';
+    return `
+      <div class="log-row">
+        <span class="log-time">${timeStr}</span>
+        <span class="log-group">${l.groupLabel || '-'}</span>
+        <span class="log-action ${actionClass}">${ACTION_LABELS[l.action] || l.action}</span>
+        <span class="log-target">${escapeHtml(l.target || '-')}</span>
+        <span class="log-ip">${l.ip || '未知'}</span>
+      </div>`;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
