@@ -327,10 +327,44 @@ const db = getFirestore(app);
 
 // ★★★ 每個組別頁面唯一要改的地方 ★★★
 const GROUP_ID = 'rnd'; // 研發組 固定識別碼
+const GROUP_LABEL = '研發組'; // 顯示用名稱，log 記錄會用這個
 
 window._db = db;
 window._fs = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, query, orderBy };
 window._groupId = GROUP_ID;
+
+// ── IP 紀錄功能 ──
+// 取得目前訪客 IP（使用免費公開服務），失敗時記錄為「未知」，不影響操作本身
+async function getClientIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    return data.ip || '未知';
+  } catch (e) {
+    return '未知';
+  }
+}
+
+// 寫入操作紀錄。action: 'add'|'edit'|'delete'，target: 被改動連結的標題
+async function writeLog(action, target, extra = '') {
+  try {
+    const ip = await getClientIP();
+    const ref = doc(collection(db, 'logs'));
+    await setDoc(ref, {
+      ip,
+      groupId: GROUP_ID,
+      groupLabel: GROUP_LABEL,
+      action,   // add / edit / delete / pinned_add / pinned_edit / pinned_delete
+      target,
+      extra,
+      timestamp: Date.now()
+    });
+  } catch (e) {
+    // log 寫入失敗不應該擋住正常操作
+    console.warn('log 寫入失敗', e);
+  }
+}
+window._writeLog = writeLog;
 
 // 全校共用固定連結 — 存在 Firebase 的 pinned_links 集合，所有組別頁面共用同一份
 
@@ -554,10 +588,12 @@ async function savePinnedModal() {
   if (linkId) {
     const lk = window._pinnedLinks.find(l => l.id === linkId);
     await setDoc(doc(collection(db, 'pinned_links'), linkId), { title, url, order: lk.order }, { merge: true });
+    window._writeLog('pinned_edit', title, '全校共用連結');
   } else {
     const order = (window._pinnedLinks.length || 0) + 1;
     const ref = doc(collection(db, 'pinned_links'));
     await setDoc(ref, { title, url, order });
+    window._writeLog('pinned_add', title, '全校共用連結');
   }
   closeModal('pinned-modal');
   await window._loadPinned();
@@ -566,8 +602,10 @@ window.savePinnedModal = savePinnedModal;
 
 async function deletePinned(linkId) {
   if (!confirm('確定要刪除這個共用連結？（會影響所有組別頁面）')) return;
+  const lk = window._pinnedLinks.find(l => l.id === linkId);
   const { doc, collection, deleteDoc } = window._fs;
   await deleteDoc(doc(collection(window._db, 'pinned_links'), linkId));
+  window._writeLog('pinned_delete', lk ? lk.title : '(未知連結)', '全校共用連結');
   await window._loadPinned();
 }
 window.deletePinned = deletePinned;
@@ -667,10 +705,12 @@ async function saveLinkModal() {
   if (linkId) {
     const lk = window._links.find(l => l.id === linkId);
     await setDoc(doc(collection(db, 'groups', groupId, 'links'), linkId), { title, url, note, color, order: lk.order }, { merge: true });
+    window._writeLog('edit', title);
   } else {
     const order = (window._links.length || 0) + 1;
     const ref = doc(collection(db, 'groups', groupId, 'links'));
     await setDoc(ref, { title, url, note, color, order });
+    window._writeLog('add', title);
   }
   closeModal('link-modal');
   await window._loadLinks();
@@ -679,8 +719,10 @@ window.saveLinkModal = saveLinkModal;
 
 async function deleteLink(linkId) {
   if (!confirm('確定要刪除這個連結？')) return;
+  const lk = window._links.find(l => l.id === linkId);
   const { doc, collection, deleteDoc } = window._fs;
   await deleteDoc(doc(collection(window._db, 'groups', window._groupId, 'links'), linkId));
+  window._writeLog('delete', lk ? lk.title : '(未知連結)');
   await window._loadLinks();
 }
 window.deleteLink = deleteLink;
