@@ -22,31 +22,39 @@
   body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
   header {
-    background: var(--primary); color: #fff; padding: 0 24px; height: 56px;
+    background: var(--primary); color: #fff; padding: 0 14px; height: 30px;
     display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
-  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.05em; }
+  header h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; }
   .header-right { display: flex; align-items: center; gap: 12px; }
   #search-box {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
-    padding: 6px 14px 6px 36px; color: #fff; font-size: 14px; width: 200px; outline: none;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 16px;
+    padding: 4px 10px 4px 28px; color: #fff; font-size: 12px; width: 150px; outline: none;
     transition: background 0.2s, width 0.3s;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='white' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: 10px center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='white' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 8px center;
   }
   #search-box::placeholder { color: rgba(255,255,255,0.6); }
-  #search-box:focus { background-color: rgba(255,255,255,0.25); width: 260px; }
+  #search-box:focus { background-color: rgba(255,255,255,0.25); width: 200px; }
 
-  main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+  main { width: 99%; max-width: 1900px; margin: 0 auto; padding: 12px 10px 40px; }
+
+  /* ── 兩欄版面：左＝全校共用連結、右＝各處室組別 ── */
+  .layout-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+  .left-col { position: sticky; top: 40px; max-height: calc(100vh - 50px); overflow-y: auto; }
+  .right-col { min-width: 0; }
+  @media (max-width: 860px) {
+    .layout-grid { display: block; }
+    .left-col { position: static; margin-bottom: 22px; max-height: none; overflow-y: visible; }
+  }
 
   /* ── 固定連結區 ── */
-  .pinned-section { margin-bottom: 32px; }
   .pinned-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 8px; padding-left: 2px; }
-  .pinned-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .pinned-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
   .pinned-list { list-style: none; }
   .pinned-item {
-    display: flex; align-items: center; padding: 12px 16px; gap: 12px;
+    display: flex; align-items: center; padding: 8px 14px; gap: 10px;
     border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.15s;
   }
   .pinned-item:last-child { border-bottom: none; }
@@ -59,7 +67,7 @@
   .pinned-title { font-size: 15px; color: var(--primary); font-weight: 500; }
 
   /* ── Section ── */
-  .section-block { margin-bottom: 30px; }
+  .section-block { margin-bottom: 26px; }
   .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-left: 2px; }
   .section-title-text { font-size: 15px; font-weight: 700; color: var(--primary); letter-spacing: 0.04em; white-space: nowrap; }
   .section-line { flex: 1; height: 2px; background: var(--primary); opacity: 0.15; border-radius: 2px; }
@@ -81,17 +89,16 @@
   /* ── 搜尋結果 ── */
   #search-results { display: none; }
   #search-results.active { display: block; }
-  #search-results.active ~ #sections-wrap, #search-results.active + .pinned-section { display: none; }
-  body.searching .section-block, body.searching .pinned-section { display: none; }
+  body.searching .section-block { display: none; }
   .search-result-header { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
   .search-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 
   mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
 
   @media (max-width: 600px) {
-    header h1 { font-size: 14px; }
-    #search-box { width: 140px; }
-    #search-box:focus { width: 180px; }
+    header h1 { font-size: 12px; }
+    #search-box { width: 120px; }
+    #search-box:focus { width: 150px; }
   }
 </style>
 </head>
@@ -100,26 +107,29 @@
 <header>
   <h1>🏫 新莊國小 行政連結網</h1>
   <div class="header-right">
-    <input type="search" id="search-box" placeholder="搜尋處室或組別…" autocomplete="off">
+    <input type="search" id="search-box" placeholder="搜尋處室或組別…" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore readonly onfocus="this.removeAttribute('readonly')">
   </div>
 </header>
 
 <main>
-  <!-- 固定連結 -->
-  <div class="pinned-section">
-    <div class="pinned-label">📌 全校共用連結</div>
-    <div class="pinned-card">
-      <ul class="pinned-list" id="pinned-list"></ul>
+  <div class="layout-grid">
+    <div class="left-col">
+      <div class="pinned-label">📌 全校共用連結</div>
+      <div class="pinned-card">
+        <ul class="pinned-list" id="pinned-list"></ul>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <!-- 搜尋結果 -->
+      <div id="search-results">
+        <div class="search-result-header" id="search-count"></div>
+        <div class="search-grid" id="search-grid"></div>
+      </div>
+
+      <div id="sections-wrap"></div>
     </div>
   </div>
-
-  <!-- 搜尋結果 -->
-  <div id="search-results">
-    <div class="search-result-header" id="search-count"></div>
-    <div class="search-grid" id="search-grid"></div>
-  </div>
-
-  <div id="sections-wrap"></div>
 </main>
 
 <script type="module">
