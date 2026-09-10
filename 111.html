@@ -56,7 +56,14 @@
   .bar-btn.danger { border-color: #f87171; color: #f87171; }
   .bar-btn:hover { background: rgba(255,255,255,0.1); }
 
-  main { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+  .layout-grid { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
+  .left-col { position: sticky; top: 70px; }
+  .right-col { min-width: 0; }
+  @media (max-width: 860px) {
+    .layout-grid { display: block; }
+    .left-col { position: static; margin-bottom: 22px; }
+  }
 
   .page-title { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
   .page-title .emoji { font-size: 28px; }
@@ -145,6 +152,12 @@
   .link-item[data-color="blue"]   { background: rgba(37, 99, 235, 0.16); }
   .link-item[data-color="purple"] { background: rgba(168, 85, 247, 0.13); }
   .link-item[data-color="pink"]   { background: rgba(236, 72, 153, 0.11); }
+  .link-item[data-color="lime"]   { background: rgba(132, 204, 22, 0.14); }
+  .link-item[data-color="teal"]   { background: rgba(20, 184, 166, 0.12); }
+  .link-item[data-color="cyan"]   { background: rgba(6, 182, 212, 0.12); }
+  .link-item[data-color="indigo"] { background: rgba(99, 102, 241, 0.13); }
+  .link-item[data-color="brown"]  { background: rgba(146, 64, 14, 0.13); }
+  .link-item[data-color="gray"]   { background: rgba(107, 114, 128, 0.13); }
   .link-item[data-color]:hover { filter: brightness(0.97); }
 
   /* ── Modal 顏色選擇器 ── */
@@ -163,6 +176,12 @@
   .color-swatch[data-color="blue"]   { background: #3b82f6; }
   .color-swatch[data-color="purple"] { background: #a855f7; }
   .color-swatch[data-color="pink"]   { background: #ec4899; }
+  .color-swatch[data-color="lime"]   { background: #84cc16; }
+  .color-swatch[data-color="teal"]   { background: #14b8a6; }
+  .color-swatch[data-color="cyan"]   { background: #06b6d4; }
+  .color-swatch[data-color="indigo"] { background: #6366f1; }
+  .color-swatch[data-color="brown"]  { background: #92400e; }
+  .color-swatch[data-color="gray"]   { background: #6b7280; }
   .color-swatch .check { color: #fff; font-size: 14px; display: none; }
   .color-swatch.selected .check { display: block; }
   .color-swatch[data-color=""].selected .check { color: var(--text); }
@@ -214,7 +233,7 @@
     <h1>📚 教務主任</h1>
   </div>
   <div class="header-right">
-    <input type="search" id="search-box" placeholder="搜尋…" autocomplete="off">
+    <input type="search" id="search-box" placeholder="搜尋…" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore readonly onfocus="this.removeAttribute('readonly')">
     <button id="edit-btn" onclick="openPasswordModal()">✏️ 編輯</button>
   </div>
 </header>
@@ -225,6 +244,8 @@
 </div>
 
 <main>
+  <div class="layout-grid">
+  <div class="left-col">
   <div class="pinned-section">
     <div class="pinned-label">📌 全校共用連結</div>
     <div class="pinned-card">
@@ -232,7 +253,9 @@
       <button class="add-pinned-btn" id="add-pinned-btn" onclick="openPinnedModal()">＋ 新增共用連結</button>
     </div>
   </div>
+  </div>
 
+  <div class="right-col">
   <div class="page-title">
     <span class="emoji">📚</span>
     <h2>教務主任常用連結</h2>
@@ -250,14 +273,20 @@
     <ul class="link-list" id="link-list"></ul>
     <button class="add-link-btn" onclick="openLinkModal()">＋ 新增連結</button>
   </div>
+  </div>
+  </div>
 </main>
 
 <!-- 密碼 Modal -->
 <div class="modal-overlay" id="pw-modal">
   <div class="modal">
     <h3>🔐 進入編輯模式</h3>
+    <!-- 誘餌欄位：讓瀏覽器把已儲存的帳密自動填在這裡，而不是下面的真正欄位 -->
+    <input type="text" name="username" autocomplete="username" tabindex="-1" aria-hidden="true"
+           style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;">
     <label>密碼</label>
-    <input type="password" id="pw-input" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')checkPassword()">
+    <input type="password" id="pw-input" placeholder="輸入密碼" autocomplete="new-password"
+           data-lpignore="true" data-1p-ignore onkeydown="if(event.key==='Enter')checkPassword()">
     <div id="pw-error">密碼錯誤，請再試一次</div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('pw-modal')">取消</button>
@@ -286,6 +315,12 @@
       <div class="color-swatch" data-color="blue" onclick="selectColor(this)"><span class="check">✓</span></div>
       <div class="color-swatch" data-color="purple" onclick="selectColor(this)"><span class="check">✓</span></div>
       <div class="color-swatch" data-color="pink" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="lime" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="teal" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="cyan" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="indigo" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="brown" onclick="selectColor(this)"><span class="check">✓</span></div>
+      <div class="color-swatch" data-color="gray" onclick="selectColor(this)"><span class="check">✓</span></div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('link-modal')">取消</button>
@@ -378,7 +413,7 @@ window._editMode = false;
 window._linkCtx = { linkId: null };
 window._sortMode = 'default'; // 'default' | 'color' | 'recent'
 
-const COLOR_ORDER = ['red','orange','yellow','green','blue','purple','pink',''];
+const COLOR_ORDER = ['red','orange','yellow','lime','green','teal','cyan','blue','indigo','purple','pink','brown','gray',''];
 
 function setSortMode(mode) {
   window._sortMode = mode;
