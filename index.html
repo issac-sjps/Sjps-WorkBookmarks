@@ -41,7 +41,7 @@
   main { width: 99%; max-width: 1900px; margin: 0 auto; padding: 12px 10px 40px; }
 
   /* ── 兩欄版面：左＝全校共用連結、右＝各處室組別 ── */
-  .layout-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+  .layout-grid { display: grid; grid-template-columns: 350px 1fr; gap: 24px; align-items: start; }
   .left-col { position: sticky; top: 40px; max-height: calc(100vh - 50px); overflow-y: auto; }
   .right-col { min-width: 0; }
   @media (max-width: 860px) {
@@ -54,7 +54,7 @@
   .pinned-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
   .pinned-list { list-style: none; }
   .pinned-item {
-    display: flex; align-items: center; padding: 8px 14px; gap: 10px;
+    display: flex; align-items: center; padding: 8px 14px; gap: 10px; min-width: 0;
     border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.15s;
   }
   .pinned-item:last-child { border-bottom: none; }
@@ -64,7 +64,7 @@
     border-radius: 5px; padding: 3px 8px; min-width: 30px; text-align: center; flex-shrink: 0;
   }
   .pinned-favicon { width: 22px; height: 22px; border-radius: 4px; flex-shrink: 0; object-fit: contain; background: #f1f5f9; }
-  .pinned-title { font-size: 15px; color: var(--primary); font-weight: 500; }
+  .pinned-title { font-size: 15px; color: var(--primary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ── Section ── */
   .section-block { margin-bottom: 26px; }
